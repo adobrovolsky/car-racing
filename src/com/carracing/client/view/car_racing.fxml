@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+
+<fx:root prefHeight="500.0" prefWidth="700.0" type="StackPane" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <GridPane gridLinesVisible="true">
+         <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+         </columnConstraints>
+         <rowConstraints>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+         </rowConstraints>
+         <children>
+            <GridPane>
+               <columnConstraints>
+                  <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                  <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+               </columnConstraints>
+               <rowConstraints>
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+               </rowConstraints>
+               <children>
+                  <Label fx:id="timer" text="0" GridPane.columnIndex="1" />
+                  <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="15.0">
+                     <children>
+                        <Label text="Leader:" />
+                        <Label fx:id="carLeader" />
+                     </children>
+                  </HBox>
+               </children>
+               <GridPane.margin>
+                  <Insets />
+               </GridPane.margin>
+               <padding>
+                  <Insets left="15.0" right="15.0" />
+               </padding>
+            </GridPane>
+            <Pane fx:id="trackOne" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
+            <Pane fx:id="trackTwo" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2" />
+            <Pane fx:id="trackThree" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3" />
+            <Pane fx:id="trackFour" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="4" />
+            <Pane fx:id="trackFive" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="5" />
+         </children>
+      </GridPane>
+   </children>
+</fx:root>
