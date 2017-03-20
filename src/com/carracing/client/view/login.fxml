@@ -10,7 +10,7 @@
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="287.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.carracing.client.controller.UserController">
    <children>
-      <TextField fx:id="login" focusTraversable="false" layoutX="33.0" layoutY="73.0" promptText="Login" />
+      <TextField fx:id="login" layoutX="33.0" layoutY="73.0" promptText="Login" />
       <Button fx:id="btnLogin" layoutX="33.0" layoutY="152.0" mnemonicParsing="false" onAction="#handleLogin" prefHeight="26.0" prefWidth="100.0" text="Login" />
       <Separator layoutX="286.0" layoutY="39.0" orientation="VERTICAL" prefHeight="200.0" />
       <Label layoutX="333.0" layoutY="99.0" text="Do you have not an account?" />

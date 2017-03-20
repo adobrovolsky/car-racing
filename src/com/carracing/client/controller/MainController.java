@@ -8,7 +8,6 @@ import com.carracing.client.RaceService;
 import com.carracing.client.RaceService.ActionListener;
 import com.carracing.client.view.CarInfoView;
 import com.carracing.client.view.CarRacing;
-import com.carracing.client.view.LoginView;
 import com.carracing.client.view.ReportsView;
 import com.carracing.shared.Command;
 import com.carracing.shared.Command.Action;
@@ -28,6 +27,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.SplitPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -39,6 +39,7 @@ public class MainController implements ActionListener {
 	@FXML private ListView<Race> racesListView;
 	@FXML private VBox carsContainer;
 	@FXML private Label greeting;
+	@FXML private SplitPane splitPane;
 	
 	private Scene loginScene;
 	private Scene signupScene;
@@ -71,6 +72,7 @@ public class MainController implements ActionListener {
 	}
 
 	public void initialize() {
+		splitPane.setDividerPosition(0, 0.3);
 		for (int i = 0; i < Race.NUMBER_CARS; i++) {
 			carsContainer.getChildren().add(new CarInfoView());
 		}

@@ -16,7 +16,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<fx:root type="javafx.scene.control.TitledPane" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1">
+<fx:root focusTraversable="false" type="javafx.scene.control.TitledPane" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1">
   <content>
     <AnchorPane>
          <children>
@@ -76,16 +76,16 @@
                         <Insets bottom="10.0" />
                      </VBox.margin>
                   </HBox>
-                  <TableView fx:id="betsTable" prefHeight="100.0" VBox.vgrow="ALWAYS">
+                  <TableView fx:id="betsTable" focusTraversable="false" prefHeight="100.0" VBox.vgrow="ALWAYS">
                     <columns>
                       <TableColumn fx:id="userColumn" prefWidth="187.0000365972519" text="User" />
                       <TableColumn fx:id="amountBetColumn" prefWidth="189.0" text="Amount of bet" />
                     </columns>
                   </TableView>
-                  <ButtonBar buttonMinWidth="50.0" prefHeight="50.0">
+                  <ButtonBar buttonMinWidth="50.0" focusTraversable="false" prefHeight="50.0">
                     <buttons>
-                        <TextField fx:id="amount" promptText="Amount" />
-                      <Button fx:id="btnMakeBet" disable="true" mnemonicParsing="false" onAction="#handleMakeBetAction" prefHeight="26.0" text="Make bet" />
+                        <TextField fx:id="amount" focusTraversable="false" promptText="Amount" />
+                      <Button fx:id="btnMakeBet" disable="true" focusTraversable="false" mnemonicParsing="false" onAction="#handleMakeBetAction" prefHeight="26.0" text="Make bet" />
                     </buttons>
                      <padding>
                         <Insets top="10.0" />
