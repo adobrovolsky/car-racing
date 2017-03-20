@@ -18,7 +18,7 @@ public class Race extends Model<Long> {
 	public static final int NUMBER_CARS = 5;
 	
 	/** The duration of a race in seconds */
-	public static final int DURATION = 60;
+	public static final int DURATION = 30;
 	
 	private final Random random = new Random();
 	private int soundID = random.nextInt(10);
@@ -85,7 +85,7 @@ public class Race extends Model<Long> {
 	
 	public void randomSpeed() {
 		getCars().stream().forEach(car -> {
-			car.setSpeed(random.nextInt(50) + 50);
+			car.setSpeed(random.nextInt(40) + 60);
 		});
 	}
 	

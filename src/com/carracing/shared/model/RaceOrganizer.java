@@ -107,7 +107,7 @@ public class RaceOrganizer {
 				
 				Server.notifyClients(new Command(Action.ADD_ACTIVE_RACE, race));
 				
-				int repeat = (int) Math.floor(Race.DURATION / RaceOrganizer.CHANGE_SPEED_INTERVAL);
+				int repeat = Race.DURATION / RaceOrganizer.CHANGE_SPEED_INTERVAL;
 				for (int i = 0; i < repeat; i++) {
 					TimeUnit.SECONDS.sleep(CHANGE_SPEED_INTERVAL);
 					race.calcDistance(CHANGE_SPEED_INTERVAL);
@@ -116,7 +116,11 @@ public class RaceOrganizer {
 					Command command = new Command(Action.CHANGE_SPEED, race.getCars());
 					Server.notifyClients(command);
 				}
-				//race.calcDistance(Race.RACE_DURATION - (CHANGE_SPEED_INTERVAL * repeat));
+				
+				if (Race.DURATION % RaceOrganizer.CHANGE_SPEED_INTERVAL != 0) {
+					int x = Race.DURATION -(RaceOrganizer.CHANGE_SPEED_INTERVAL * repeat);
+					race.calcDistance(x);
+				}
 				
 				race.finish();
 				
@@ -144,7 +148,7 @@ public class RaceOrganizer {
 		BetsByCarMap bets = betsMap.get(race);
 		Car winner = identifyWinner(race.getCars());
 		Map<User, Double> usersWinners = identifyUsersWinners(winner, betsMap.get(race));
-		double systemProfit = culculateSystemProfit(bets);
+		double systemProfit = culculateSystemProfit(bets, winner);
 		
 		RaceSummary summary = new RaceSummary();
 		summary.setRace(race);
@@ -167,15 +171,21 @@ public class RaceOrganizer {
 	
 	/**
 	 * Returns the amount of money that the system received on this race
+	 * 
 	 * @param bets all bets on this race
+	 * @param winner car winning the race
 	 */
-	private double culculateSystemProfit(BetsByCarMap bets) {
+	private double culculateSystemProfit(BetsByCarMap bets, Car winner) {
 		double sumBets = bets.getSumBets();
+		if (bets.forCar(winner).isEmpty()) {
+			return sumBets;
+		}
 		return sumBets * PERCENT / 100;
 	}
 	
 	/**
 	 * Determines the car that traveled the longest distance
+	 * 
 	 * @param cars collection of cars that participated in this race
 	 * @return the car that traveled the longest distance
 	 */

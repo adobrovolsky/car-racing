@@ -159,11 +159,12 @@ public class CarRacing extends StackPane implements ActionListener {
 			if (cars.hasNext()) {
 				Car car = cars.next();
 				CarView carView = new CarView(car);
-				TranslateTransition transition = carView.getTransition();
-				transition.setToX(getWidth());
-				transition.play();
 				track.getChildren().add(carView);
 				map.put(car.getId(), carView);
+				
+				TranslateTransition transition = carView.getTransition();
+				transition.setToX(getWidth() - 150);
+				transition.play();
 			}
 		});
 		playSound();

@@ -44,7 +44,7 @@ public class Car extends Model<Long> {
 		size = sizes[random.nextInt(sizes.length)];
 		
 		color = Color.rgb(random.nextInt(256), random.nextInt(256), random.nextInt(256)).toString();
-		speed = random.nextInt(50) + 50;
+		speed = random.nextInt(40) + 60;
 		name = new StringBuilder(type.toString())
 				.append("-")
 				.append(id)
