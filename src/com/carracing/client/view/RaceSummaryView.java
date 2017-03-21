@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 import com.carracing.client.RaceService;
 import com.carracing.shared.model.RaceSummary;
 
-import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
@@ -19,6 +18,10 @@ import javafx.scene.control.TableView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
+/**
+ *	This view displays the result of one race. Shows the car 
+ *	that won, and the users who made bets on this car.
+ */
 public class RaceSummaryView extends VBox {
 	
 	@FXML private Label message;
@@ -27,28 +30,12 @@ public class RaceSummaryView extends VBox {
 	@FXML private TableColumn<User, String> userColumn;
 	@FXML private TableColumn<User, Double> winSumColumn;
 	
-	private final RaceSummary summary;
 	private final RaceService service = RaceService.getInstance();
 	
 	public RaceSummaryView(RaceSummary summary) {
-		this.summary = summary;
-		
 		inflateLayout();
-	
-		userColumn.setCellValueFactory(data -> {
-			String fullname = data.getValue().fullname;
-			return new ReadOnlyStringWrapper(fullname);
-		});
-		
-		winSumColumn.setCellValueFactory(data -> {
-			double winSum = data.getValue().winSum;
-			return new ReadOnlyObjectWrapper<Double>(winSum);
-		});
+		configureTableColumns();
 
-		List<User> users = summary.getUsers().entrySet().stream()
-			.map(entry -> new User(entry.getKey().getFullname(), entry.getValue()))
-			.collect(Collectors.toList());
-		
 		if (service.isLogin()) {
 			com.carracing.shared.model.User currUser = service.getUser();
 			if (summary.getUsers().containsKey(currUser)) {
@@ -58,10 +45,28 @@ public class RaceSummaryView extends VBox {
 			}
 		}
 		
+		List<User> users = convertRaceSummaryToUser(summary);
 		usersTable.setItems(FXCollections.observableArrayList(users));
 		carPreview.getChildren().add(new CarView(summary.getWinner()));
 	}
 	
+	private List<User> convertRaceSummaryToUser(RaceSummary summary) {
+		return summary.getUsers().entrySet().stream()
+				.map(entry -> new User(entry.getKey().getFullname(), entry.getValue()))
+				.collect(Collectors.toList());
+	}
+
+	private void configureTableColumns() {
+		userColumn.setCellValueFactory(data ->
+			new ReadOnlyStringWrapper(data.getValue().fullname));
+	
+		winSumColumn.setCellValueFactory(data ->
+			new ReadOnlyObjectWrapper<Double>(data.getValue().winSum));
+	}
+
+	/**
+	 * Creates a view based on the fxml file.
+	 */
 	private void inflateLayout() {
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("race_summary.fxml"));
 		loader.setRoot(this);
@@ -82,8 +87,5 @@ public class RaceSummaryView extends VBox {
 			this.fullname = fullname;
 			this.winSum = winSum;
 		}
-		
-		
 	}
-
 }

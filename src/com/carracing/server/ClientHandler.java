@@ -97,13 +97,7 @@ public class ClientHandler implements AutoCloseable {
 			case MAKE_BET: makeBet(command.getData()); break;
 			case LOGIN: login(command.getData()); break;
 			case SIGNUP: signup(command.getData()); break;
-			case OBTAIN_CLIENT_ID: obtainClientId(); break;
 			}
-		}
-		
-		private void obtainClientId() {
-			Command command = new Command(Action.ADD_CLIENT_ID, 1);
-			writeHandler.send(command);
 		}
 
 		private void obtainRaces() {
@@ -114,7 +108,7 @@ public class ClientHandler implements AutoCloseable {
 
 		private void obtainActiveRace() {
 			Race activeRace = raceService.obtainActiveRace();
-			Command command = new Command(Action.START_GAME, activeRace);
+			Command command = new Command(Action.ADD_ACTIVE_RACE, activeRace);
 			writeHandler.send(command);
 		}
 

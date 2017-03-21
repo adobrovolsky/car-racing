@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -32,6 +31,9 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 
+/**
+ * This view displays a race in which five cars participate.
+ */
 public class CarRacing extends StackPane implements ActionListener {
 
 	public static final String TITLE = "Game";
@@ -44,7 +46,7 @@ public class CarRacing extends StackPane implements ActionListener {
 	@FXML private Pane trackFour;
 	@FXML private Pane trackFive;
 
-	private RaceService service = RaceService.getInstance();
+	private final RaceService service = RaceService.getInstance();
 	private MediaPlayer startPlayer, finishPlayer, gamePlayer;
 	private ClassLoader loader = Main.class.getClassLoader();
 	private Map<Long, CarView> map = new HashMap<>();
@@ -62,7 +64,10 @@ public class CarRacing extends StackPane implements ActionListener {
 		service.addListener(Action.CHANGE_SPEED, this);
 		service.addListener(Action.FINISH_GAME, this);
 	}
-
+	
+	/**
+	 * Creates a view based on the fxml file.
+	 */
 	private void inflateLayout() {
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("car_racing.fxml"));
 		loader.setRoot(this);
@@ -91,11 +96,15 @@ public class CarRacing extends StackPane implements ActionListener {
 			}
 		});
 	}
-
+	
+	/**
+	 * Plays a sound start of the race. Then randomly 
+	 * chooses the sound for the race itself.
+	 */
 	private void playSound() {
 		try {
 			URI soundsDir = loader.getResource("sounds/races").toURI();
-			URI startSound = loader.getResource("sounds/start_sound.wav").toURI();
+			URI startSound = loader.getResource("sounds/start_sound.wav").toURI();	
 			File dir = new File(soundsDir);
 			File[] sounds = dir.listFiles();
 
@@ -110,7 +119,11 @@ public class CarRacing extends StackPane implements ActionListener {
 			e.printStackTrace();
 		}
 	}
-
+	
+	/**
+	 * After the race time has passed, all the cars stop 
+	 * and play the sound of the end of the race.
+	 */
 	private void handleFinishGame(RaceSummary summary) {
 		map.entrySet().stream().forEach(entry -> {
 			entry.getValue().getTransition().stop();
@@ -130,7 +143,10 @@ public class CarRacing extends StackPane implements ActionListener {
 		}
 
 	}
-
+	/**
+	 * Change the speed of all cars.
+	 * @param cars all cars with new speeds
+	 */
 	private void handleChangeSpeed(Set<Car> cars) {
 		cars.stream().forEach(car -> {
 			CarView view = map.get(car.getId());
@@ -145,7 +161,11 @@ public class CarRacing extends StackPane implements ActionListener {
 			view.getTransition().setRate(rate);
 		});
 	}
-
+	
+	/**
+	 * Creates a {@link CarView} for each car.
+	 * @param race the race that is currently running
+	 */
 	private void handleAddActiveRace(Race race) {
 		this.race = race;
 		getChildren().remove(summaryView);
@@ -170,6 +190,9 @@ public class CarRacing extends StackPane implements ActionListener {
 		playSound();
 	}
 	
+	/**
+	 * This class implements a timer that is used to display the duration of a race.
+	 */
 	private class TimeTask extends TimerTask {
 		private int time;
 		
@@ -180,6 +203,5 @@ public class CarRacing extends StackPane implements ActionListener {
 				timer.setText(timeString);
 			});
 		}
-		
 	}
 }

@@ -9,7 +9,6 @@ import com.carracing.shared.Command;
 import com.carracing.shared.Command.Action;
 import com.carracing.shared.model.Bet;
 import com.carracing.shared.model.Car;
-import com.carracing.shared.model.User;
 
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -29,6 +28,10 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.StackPane;
 
+/**
+ * This view allows you to make bet on this car. Also displays 
+ * all information about the car and list of already made bets.
+ */
 public class CarInfoView extends TitledPane implements ActionListener {
 	
 	@FXML private Label shapeValue;
@@ -54,15 +57,11 @@ public class CarInfoView extends TitledPane implements ActionListener {
 		service.addListener(Action.ADD_BETS, this);
 		service.addListener(Action.ADD_BET, this);
 		
-		amountBetColumn.setCellValueFactory(data -> {
-			int value = data.getValue().getAmount();
-			return new ReadOnlyObjectWrapper<Integer>(value);
-		});
+		amountBetColumn.setCellValueFactory(data ->
+			new ReadOnlyObjectWrapper<Integer>(data.getValue().getAmount()));
 		
-		userColumn.setCellValueFactory(data -> {
-			String value = data.getValue().getUser().getFullname();
-			return new ReadOnlyStringWrapper(value);
-		});
+		userColumn.setCellValueFactory(data ->
+			new ReadOnlyStringWrapper(data.getValue().getUser().getFullname()));
 		
 		amount.textProperty().addListener((observable, oldVal, newVal) -> {
 			boolean isNotDigit = newVal.chars().allMatch(v -> !Character.isDigit(v));
@@ -74,19 +73,27 @@ public class CarInfoView extends TitledPane implements ActionListener {
 		this(null);
 	}
 	
+	/**
+	 * Deletes all data so that this view can be reused.
+	 */
 	private void clear() {
 		amount.clear();
-		ObservableList<Bet> items = betsTable.getItems();
-		items.remove(0, items.size());
+		betsTable.getItems().clear();
 		amountBetsValue.setText("0");
 		totalBetsValue.setText("0");
 		carPreview.getChildren().clear();
 	}
 	
+	/**
+	 * Sends a request to the server to receive all bets on this car.
+	 */
 	private void obtainBets() {
 		service.send(new Command(Action.OBTAIN_BETS, car));
 	}
 	
+	/**
+	 * Initializes the view with new data.
+	 */
 	public void setCar(Car car) {
 		if (car == null) return;
 		this.car = car;	
@@ -101,6 +108,9 @@ public class CarInfoView extends TitledPane implements ActionListener {
 		carPreview.getChildren().add(carView);
 	}
 	
+	/**
+	 * Creates a view based on the fxml file.
+	 */
 	private void inflateLayout() {
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("car_info.fxml"));
 		loader.setRoot(this);
@@ -113,8 +123,7 @@ public class CarInfoView extends TitledPane implements ActionListener {
 		}
 	}
 	
-	@FXML
-	public void handleMakeBetAction(ActionEvent event) {
+	@FXML public void handleMakeBetAction(ActionEvent event) {
 		if (!service.isLogin()) {
 			Alert alert = new Alert(AlertType.INFORMATION);
 			alert.setHeaderText(null);
@@ -128,17 +137,11 @@ public class CarInfoView extends TitledPane implements ActionListener {
 		amount.setText("");
 	}
 
-	@Override
-	public void actionPerformed(Action action, Object data) {
+	@Override public void actionPerformed(Action action, Object data) {
 		switch (action) {
 			case ADD_BETS: handleAddBets((List<Bet>) data); break;
 			case ADD_BET: handleAddBet((Bet) data); break;
-			case FINISH_GAME: handleFinisheGame(); break;
 		}
-	}
-
-	private void handleFinisheGame() {
-		
 	}
 
 	private void handleAddBets(List<Bet> bets) {

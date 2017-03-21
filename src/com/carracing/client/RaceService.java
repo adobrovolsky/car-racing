@@ -18,6 +18,16 @@ import com.carracing.shared.model.User;
 import com.carracing.shared.network.ReadHandler;
 import com.carracing.shared.network.WriteHandler;
 
+/**
+ * This class is responsible for interacting with the server.
+ * The server and the client communicate by means of sockets. 
+ * For the input and output streams are created with separate handlers, 
+ * which are executed in different threads.
+ * 
+ * @see WriteHandler
+ * @see ReadHandler
+ * @see Socket
+ */
 public class RaceService implements AutoCloseable {
 	
 	@FunctionalInterface
@@ -30,12 +40,19 @@ public class RaceService implements AutoCloseable {
 	private static final String HOST = "localhost";
 	private static final int PORT = 8024;
 	
+	/**
+	 * Authorized user.
+	 */
 	private User user;
 	private static volatile RaceService instance;
 	private WriteHandler writeHandler;
 	private ReadHandler readHandler;
 	private Socket socket;
 	private ExecutorService executor = Executors.newFixedThreadPool(2);
+	
+	/**
+	 * Listeners the server events which grouping by action.
+	 */
 	private Map<Action, Set<ActionListener>> listeners = new HashMap<>();
 	
 	private RaceService() {
@@ -54,6 +71,11 @@ public class RaceService implements AutoCloseable {
 		}
 	}
 	
+	/**
+	 * This service is created in one instance for the entire application.
+	 * 
+	 * @return instance of this service
+	 */
 	public static RaceService getInstance() {
 		if (instance == null) {
 			synchronized (RaceService.class) {
@@ -65,8 +87,10 @@ public class RaceService implements AutoCloseable {
 		return instance;
 	}
 	
-	@Override
-	public void close() throws Exception {
+	/**
+	 * Stops threads and closes an open socket.
+	 */
+	@Override public void close() throws Exception {
 		readHandler.close();
 		writeHandler.close();
 		socket.close();
@@ -81,10 +105,21 @@ public class RaceService implements AutoCloseable {
 		return user;
 	}
 	
+	/**
+	 * A simple way to authorize users.
+	 * 
+	 * @return true if the user is not null, otherwise false. 
+	 */
 	public boolean isLogin() {
 		return user != null;
 	}
 	
+	/**
+	 * Adds a listener to the specified action.
+	 * 
+	 * @param action the listener will receive this action
+	 * @param listener it will be called when the action happens
+	 */
 	public void addListener(Action action, ActionListener listener) {
 		 Set<ActionListener> set = listeners.get(action);
 		 if (set == null) {
@@ -98,10 +133,18 @@ public class RaceService implements AutoCloseable {
 		listeners.get(action).remove(listener);
 	}
 	
+	/**
+	 * Sends the transmitted command to the server.
+	 */
 	public void send(Command command) {
 		writeHandler.send(command);
 	}
 	
+	
+	/**
+	 * This class reads commands from the server.
+	 * Notifies all listeners about getting command.
+	 */
 	class ClientReadHandler extends ReadHandler {
 		
 		public ClientReadHandler(InputStream is) throws IOException {
@@ -119,6 +162,7 @@ public class RaceService implements AutoCloseable {
 			if (set != null) {
 				set.stream().forEach(listener -> 
 					listener.actionPerformed(command.getAction(), command.getData()));
+				
 				LOGGER.info("Notified " + set.size() + " listeners");
 			}
 		}

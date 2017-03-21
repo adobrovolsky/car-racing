@@ -59,6 +59,4 @@ public class User extends Model<Long> {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-	
-	
 }

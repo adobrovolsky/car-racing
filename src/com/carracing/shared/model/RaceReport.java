@@ -55,11 +55,7 @@ public class RaceReport extends Model<Long> {
 	public double getSystemProfit() {
 		return systemProfit;
 	}
-	
 	public void setSystemProfit(double systemProfit) {
 		this.systemProfit = systemProfit;
 	}
-	
-	
-
 }

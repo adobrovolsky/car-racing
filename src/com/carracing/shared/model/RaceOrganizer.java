@@ -41,16 +41,24 @@ public class RaceOrganizer {
 	
 	private final ExecutorService executor = Executors.newFixedThreadPool(NUMBER_RACES);
 	
-	/** Maximum number of races */
+	/** 
+	 * The maximum number of races.
+	 */
 	private static final int NUMBER_RACES = 10;
 	
-	/** Delay after the race is finished in seconds */
+	/**
+	 * Delay after the race is finished in seconds.
+	 */
 	private static final int DELAY_AFTER_RACE = 60;
 	
-	/** The percentage of bets which takes the organizer */
+	/** 
+	 * The percentage of bets which takes the organizer.
+	 */
 	private static final int PERCENT = 5;
 	
-	/** After how much time will be changing speed cars */
+	/** 
+	 * After how much time will be changing speed cars.
+	 */
 	public static final int CHANGE_SPEED_INTERVAL = 30;
 	
 	private final List<Race> races = new ArrayList<>(NUMBER_RACES);

@@ -52,7 +52,7 @@ public class Car extends Model<Long> {
 	public String toString() {
 		return new StringBuilder(getType().toString())
 				.append('-').append(getId())
-				.append('-').append(getRace().getId())
+				.append('-').append( getRace() == null ? "null" : getRace().getId())
 				.toString();
 	}
 	

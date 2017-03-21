@@ -8,6 +8,14 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+/**
+ * This is the entry point to the program. 
+ * To start the client, you need to run this class.
+ * Launches the application main screen.
+ * 
+ * @see Application
+ * @version 1.0
+ */
 public class Main extends Application {
 	
 	private static final String TITLE = "Car racing"; 
@@ -36,5 +44,4 @@ public class Main extends Application {
 	public static void main(String [] args) {
 		launch(args);
 	}
-
 }

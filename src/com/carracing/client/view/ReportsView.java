@@ -18,6 +18,9 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.VBox;
 
+/**
+ * This view displays the results of races.
+ */
 public class ReportsView extends VBox {
 	
 	public static final String TITLE = "Reports";
@@ -38,22 +41,7 @@ public class ReportsView extends VBox {
 	
 	public ReportsView() {
 		infliteLayout();
-		
-		raceColumn.setCellValueFactory(d -> {
-			return new ReadOnlyStringWrapper(d.getValue().getRace().toString());
-		});
-		totalBetsColumn.setCellValueFactory(d -> {
-			return new ReadOnlyObjectWrapper<Integer>(d.getValue().getTotalBets());
-		});
-		amountBetsColumn.setCellValueFactory(d -> {
-			return new ReadOnlyObjectWrapper<Integer>(d.getValue().getAmountBets());
-		});
-		winnerColumn.setCellValueFactory(d -> {
-			return new ReadOnlyStringWrapper(d.getValue().getWinner().toString());
-		});
-		systemProfitColumn.setCellValueFactory(d -> {
-			return new ReadOnlyObjectWrapper<Double>(d.getValue().getSystemProfit());
-		});
+		configureTableColumns();
 		
 		service.addListener(Action.ADD_REPORTS, (a, d) -> {
 			Platform.runLater(() -> {
@@ -81,7 +69,27 @@ public class ReportsView extends VBox {
 		
 		//service.send(new Command(Action.OBTAIN_REPORTS));
 	}
+	
+	private void configureTableColumns() {
+		raceColumn.setCellValueFactory(d -> 
+			new ReadOnlyStringWrapper(d.getValue().getRace().toString()));
 
+		totalBetsColumn.setCellValueFactory(d -> 
+			new ReadOnlyObjectWrapper<Integer>(d.getValue().getTotalBets()));
+
+		amountBetsColumn.setCellValueFactory(d ->
+			new ReadOnlyObjectWrapper<Integer>(d.getValue().getAmountBets()));
+
+		winnerColumn.setCellValueFactory(d ->
+			new ReadOnlyStringWrapper(d.getValue().getWinner().toString()));
+
+		systemProfitColumn.setCellValueFactory(d -> 
+			new ReadOnlyObjectWrapper<Double>(d.getValue().getSystemProfit()));
+	}
+
+	/**
+	 * Creates a view based on the fxml file.
+	 */
 	private void infliteLayout() {
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("reports.fxml"));
 		loader.setRoot(this);
@@ -93,5 +101,4 @@ public class ReportsView extends VBox {
 			throw new RuntimeException(e);
 		}
 	}
-
 }
