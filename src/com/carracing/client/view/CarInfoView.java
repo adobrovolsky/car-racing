@@ -56,7 +56,7 @@ public class CarInfoView extends TitledPane implements ActionListener {
 		
 		amountBetColumn.setCellValueFactory(data -> {
 			int value = data.getValue().getAmount();
-			return new ReadOnlyObjectWrapper(value);
+			return new ReadOnlyObjectWrapper<Integer>(value);
 		});
 		
 		userColumn.setCellValueFactory(data -> {
@@ -117,6 +117,7 @@ public class CarInfoView extends TitledPane implements ActionListener {
 	public void handleMakeBetAction(ActionEvent event) {
 		if (!service.isLogin()) {
 			Alert alert = new Alert(AlertType.INFORMATION);
+			alert.setHeaderText(null);
 			alert.setContentText("You need to login to make bets");
 			alert.showAndWait();
 			return;

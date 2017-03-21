@@ -28,7 +28,7 @@ public class RaceService implements AutoCloseable {
 	private static final Logger LOGGER = Logger.getLogger(RaceService.class.getSimpleName());
 	
 	private static final String HOST = "localhost";
-	private static final int PORT = 8022;
+	private static final int PORT = 8024;
 	
 	private User user;
 	private static volatile RaceService instance;

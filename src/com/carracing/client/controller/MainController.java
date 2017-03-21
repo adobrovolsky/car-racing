@@ -1,6 +1,5 @@
 package com.carracing.client.controller;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
@@ -26,11 +25,13 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 public class MainController implements ActionListener {
 
@@ -63,11 +64,11 @@ public class MainController implements ActionListener {
 		this.stage = stage;
 	}
 
-	@FXML public void handleLoginAction(ActionEvent event) throws IOException {
+	@FXML public void handleLoginAction(ActionEvent event) {
 		showLogin();
 	}
 
-	@FXML public void handleSignupAction(ActionEvent event) throws IOException {
+	@FXML public void handleSignupAction(ActionEvent event) {
 		showSignup();
 	}
 
@@ -91,9 +92,6 @@ public class MainController implements ActionListener {
 			}
 		});
 		
-		showNewWindow(new CarRacing(), CarRacing.TITLE);
-		showNewWindow(new ReportsView(), ReportsView.TITLE);
-		
 		try {
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("../view/login.fxml"));
 			Parent loginRoot = loader.load();
@@ -109,6 +107,9 @@ public class MainController implements ActionListener {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		showNewWindow(new CarRacing(), CarRacing.TITLE);
+		showNewWindow(new ReportsView(), ReportsView.TITLE);
 	}
 	
 	private void showNewWindow(Parent parent, String title) {
@@ -133,7 +134,7 @@ public class MainController implements ActionListener {
 	private void handleAddUser(Object data) {
 		if(data != null) {
 			User user = (User) data;
-			greeting.setText("Hello " + user.getFullname());
+			greeting.setText("Hello " + user.getFullname() + "!");
 		}
 	}
 

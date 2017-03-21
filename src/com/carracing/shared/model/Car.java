@@ -45,18 +45,14 @@ public class Car extends Model<Long> {
 		
 		color = Color.rgb(random.nextInt(256), random.nextInt(256), random.nextInt(256)).toString();
 		speed = random.nextInt(40) + 60;
-		name = new StringBuilder(type.toString())
-				.append("-")
-				.append(id)
-				.toString(); 
+		name = "Car";
 	}
 	
 	@Override
 	public String toString() {
-		return new StringBuilder("Car {")
-				.append("id:").append(id)
-				.append(" , speed: ").append(speed)
-				.append(", name: ").append(name).append("}")
+		return new StringBuilder(getType().toString())
+				.append('-').append(getId())
+				.append('-').append(getRace().getId())
 				.toString();
 	}
 	
@@ -137,5 +133,12 @@ public class Car extends Model<Long> {
 
 	public void setRace(Race race) {
 		this.race = race;
+	}
+
+	public void generateName() { 
+		name = new StringBuilder(getType().toString())
+			.append('-').append(getId())
+			.append('-').append(getRace().getId())
+			.toString();
 	}
 }

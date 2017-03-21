@@ -45,13 +45,13 @@ public class RaceOrganizer {
 	private static final int NUMBER_RACES = 10;
 	
 	/** Delay after the race is finished in seconds */
-	private static final int DELAY_AFTER_RACE = 6;
+	private static final int DELAY_AFTER_RACE = 60;
 	
 	/** The percentage of bets which takes the organizer */
 	private static final int PERCENT = 5;
 	
 	/** After how much time will be changing speed cars */
-	public static final int CHANGE_SPEED_INTERVAL = 10;
+	public static final int CHANGE_SPEED_INTERVAL = 30;
 	
 	private final List<Race> races = new ArrayList<>(NUMBER_RACES);
 	private final Map<Race, BetsByCarMap> betsMap = new HashMap<>();
@@ -291,13 +291,12 @@ public class RaceOrganizer {
 	}
 	
 	private void generateRaces(int num) {
-		Random random = new Random();
 		for (int i = 0; i < num; i++) {
 			Race race = new Race();
 			races.add(race);
 			raceRepo.add(race);
 			
-			for (int j = 0; j < race.NUMBER_CARS; j++) {
+			for (int j = 0; j < Race.NUMBER_CARS; j++) {
 				Car car = new Car();
 				car.fillRandom();
 				car.setRace(race);

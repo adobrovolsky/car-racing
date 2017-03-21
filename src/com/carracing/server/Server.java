@@ -17,7 +17,7 @@ public class Server {
 	
 	private static final Logger LOGGER = Logger.getLogger(Server.class.getSimpleName());
 	
-	private int port = 8022;
+	private int port = 8024;
 	
 	/**
 	 * This is the flag that determines whether the server will process

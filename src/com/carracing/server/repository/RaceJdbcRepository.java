@@ -35,8 +35,10 @@ public class RaceJdbcRepository implements Repository<Race> {
 	public boolean add(Race entity) {
 		final String sqlQuery = String.format(
 				"INSERT INTO race(name, started, finished, status, sound_id) VALUES ('%s', '%s', '%s', '%s', %d)", 
-				entity.getName(), String.valueOf(entity.getStarted()), 
-				String.valueOf(entity.getFinished()), entity.getStatus(), entity.getSoundID());
+				entity.getName(), 
+				entity.getStarted() == null ? null : entity.getStarted().toString(), 
+				entity.getFinished() == null ? null : entity.getFinished().toString(),
+				entity.getStatus(), entity.getSoundID());
 
 		try {
 			long generatedID = DBUtil.executeUpdate(sqlQuery);
@@ -105,14 +107,10 @@ public class RaceJdbcRepository implements Repository<Race> {
 				race.setName(resultSet.getString("name"));
 				
 				String started = resultSet.getString("started");
-				if (!started.equals("null")) {
-					race.setStarted(LocalDateTime.parse(started));
-				}
+				race.setStarted(started.equals("null") ? null : LocalDateTime.parse(started));
 				
 				String finished = resultSet.getString("finished");
-				if (!finished.equals("null")) {
-					race.setFinished(LocalDateTime.parse(finished));
-				}
+				race.setFinished(finished.equals("null") ? null : LocalDateTime.parse(finished));
 				
 				race.setSoundID(resultSet.getInt("sound_id"));
 				race.setStatus(RaceStatus.valueOf(resultSet.getString("status")));

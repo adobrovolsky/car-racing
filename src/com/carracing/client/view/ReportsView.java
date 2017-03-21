@@ -40,7 +40,7 @@ public class ReportsView extends VBox {
 		infliteLayout();
 		
 		raceColumn.setCellValueFactory(d -> {
-			return new ReadOnlyStringWrapper(d.getValue().getRace().getName());
+			return new ReadOnlyStringWrapper(d.getValue().getRace().toString());
 		});
 		totalBetsColumn.setCellValueFactory(d -> {
 			return new ReadOnlyObjectWrapper<Integer>(d.getValue().getTotalBets());
@@ -49,7 +49,7 @@ public class ReportsView extends VBox {
 			return new ReadOnlyObjectWrapper<Integer>(d.getValue().getAmountBets());
 		});
 		winnerColumn.setCellValueFactory(d -> {
-			return new ReadOnlyStringWrapper(d.getValue().getWinner().getName());
+			return new ReadOnlyStringWrapper(d.getValue().getWinner().toString());
 		});
 		systemProfitColumn.setCellValueFactory(d -> {
 			return new ReadOnlyObjectWrapper<Double>(d.getValue().getSystemProfit());

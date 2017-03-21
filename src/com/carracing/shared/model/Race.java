@@ -18,15 +18,21 @@ public class Race extends Model<Long> {
 	public static final int NUMBER_CARS = 5;
 	
 	/** The duration of a race in seconds */
-	public static final int DURATION = 30;
+	public static final int DURATION = 90;
+	
+	public static final int NUMBER_SOUNDS = 10;
 	
 	private final Random random = new Random();
-	private int soundID = random.nextInt(10);
+	private int soundID = random.nextInt(NUMBER_SOUNDS);
 	private RaceStatus status = RaceStatus.WAITING;
 	private String name = "Race";
-	private LocalDateTime started = LocalDateTime.now();
-	private LocalDateTime finished = LocalDateTime.now();
+	private LocalDateTime started;
+	private LocalDateTime finished;
 	private Set<Car> cars;
+	
+	public Race(String name) {
+		this.name = name;
+	}
 	
 	public Race() {}
 
@@ -57,7 +63,7 @@ public class Race extends Model<Long> {
 	
 	@Override
 	public String toString() {
-		return String.format("Race %d, cars: %d", id, cars.size());
+		return name + ' ' + id;
 	}
 	
 	public void addCars(Collection<Car> cars) {
