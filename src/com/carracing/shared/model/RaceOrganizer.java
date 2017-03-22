@@ -163,13 +163,15 @@ public class RaceOrganizer {
 		summary.setSystemProfit(systemProfit);
 		summary.setWinner(winner);
 		summary.setUsers(usersWinners);
+		summary.setTotalBets(bets.getCountBets());
+		summary.setAmountBets(bets.getSumBets());
 		
 		RaceReport report = new RaceReport();
-		report.setWinner(winner);
+		report.setCarName(winner.toString());
 		report.setAmountBets(bets.getSumBets());
 		report.setSystemProfit(systemProfit);
 		report.setTotalBets(bets.getCountBets());
-		report.setRace(race);
+		report.setRaceName(race.toString());
 		
 		summaryRepo.add(summary);
 		

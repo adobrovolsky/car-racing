@@ -1,11 +1,12 @@
 package com.carracing.client.view;
 
 import java.io.IOException;
+import java.util.List;
 
 import com.carracing.client.RaceService;
+import com.carracing.shared.Command;
 import com.carracing.shared.Command.Action;
 import com.carracing.shared.model.RaceReport;
-import com.carracing.shared.model.TotalReport;
 
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -45,13 +46,17 @@ public class ReportsView extends VBox {
 		
 		service.addListener(Action.ADD_REPORTS, (a, d) -> {
 			Platform.runLater(() -> {
-				TotalReport report = (TotalReport) d;
-				totalSystemProfit = report.getSystenProfit();
-				completedRaces = report.getCompletedRaces();
+				List<RaceReport> reports = (List<RaceReport>) d;
+				
+				totalSystemProfit = reports.stream()
+						.map(report -> report.getSystemProfit())
+						.reduce(0., Double::sum);
+				
+				completedRaces = reports.size();
 				
 				totalSystemProfitView.setText(totalSystemProfit + "");
 				completedRacesView.setText(completedRaces + "");
-				reportsTable.setItems(FXCollections.observableArrayList(report.getReports()));
+				reportsTable.setItems(FXCollections.observableArrayList(reports));
 			});
 		});
 		
@@ -67,12 +72,12 @@ public class ReportsView extends VBox {
 			});
 		});
 		
-		//service.send(new Command(Action.OBTAIN_REPORTS));
+		service.send(new Command(Action.OBTAIN_REPORTS));
 	}
 	
 	private void configureTableColumns() {
 		raceColumn.setCellValueFactory(d -> 
-			new ReadOnlyStringWrapper(d.getValue().getRace().toString()));
+			new ReadOnlyStringWrapper(d.getValue().getRaceName()));
 
 		totalBetsColumn.setCellValueFactory(d -> 
 			new ReadOnlyObjectWrapper<Integer>(d.getValue().getTotalBets()));
@@ -81,7 +86,7 @@ public class ReportsView extends VBox {
 			new ReadOnlyObjectWrapper<Integer>(d.getValue().getAmountBets()));
 
 		winnerColumn.setCellValueFactory(d ->
-			new ReadOnlyStringWrapper(d.getValue().getWinner().toString()));
+			new ReadOnlyStringWrapper(d.getValue().getCarName()));
 
 		systemProfitColumn.setCellValueFactory(d -> 
 			new ReadOnlyObjectWrapper<Double>(d.getValue().getSystemProfit()));

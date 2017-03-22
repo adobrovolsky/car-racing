@@ -2,6 +2,8 @@ package com.carracing.server;
 
 import java.util.List;
 
+import com.carracing.server.repository.ReportsJdbcRepository;
+import com.carracing.server.repository.ReportsJdbcRepository.SelectAllRaceReportsQuery;
 import com.carracing.server.repository.Repository;
 import com.carracing.server.repository.Specification;
 import com.carracing.server.repository.UserJdbcRepository;
@@ -18,7 +20,8 @@ public class RaceService {
 	
 	private final RaceOrganizer organizer;
 	private static volatile RaceService instance;
-	private final Repository<User> userRepo = new UserJdbcRepository();
+	private final Repository<User> userRepository = new UserJdbcRepository();
+	private final Repository<RaceReport> reportsRepository = new ReportsJdbcRepository();
 	
 	private RaceService() {
 		organizer = new RaceOrganizer();
@@ -50,7 +53,8 @@ public class RaceService {
 	}
 	
 	public List<RaceReport> obtainReports() {
-		return null;
+		List<RaceReport> reports = reportsRepository.query(new SelectAllRaceReportsQuery());
+		return reports;
 	}
 	
 	public void makeBet(final Bet bet) {
@@ -59,13 +63,13 @@ public class RaceService {
 	
 	public User login(final User user) {
 		Specification spec = new SelectUserByLoginAndPasswordQuery(user.getLogin(), user.getPassword());
-		List<User> users = userRepo.query(spec);
+		List<User> users = userRepository.query(spec);
 		if (users.isEmpty()) return null;
 		return users.get(0);
 	}
 	
 	public boolean signup(User user) {
-		return userRepo.add(user);
+		return userRepository.add(user);
 	}
 	
 	public RaceOrganizer getRaceOrganizer() {
