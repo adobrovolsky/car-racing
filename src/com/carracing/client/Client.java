@@ -16,7 +16,7 @@ import javafx.stage.Stage;
  * @see Application
  * @version 1.0
  */
-public class Main extends Application {
+public class Client extends Application {
 	
 	private static final String TITLE = "Car racing"; 
 

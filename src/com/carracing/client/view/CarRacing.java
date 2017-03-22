@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.carracing.client.Main;
+import com.carracing.client.Client;
 import com.carracing.client.RaceService;
 import com.carracing.client.RaceService.ActionListener;
 import com.carracing.shared.Command.Action;
@@ -48,7 +48,7 @@ public class CarRacing extends StackPane implements ActionListener {
 
 	private final RaceService service = RaceService.getInstance();
 	private MediaPlayer startPlayer, finishPlayer, gamePlayer;
-	private ClassLoader loader = Main.class.getClassLoader();
+	private ClassLoader loader = Client.class.getClassLoader();
 	private Map<Long, CarView> map = new HashMap<>();
 	private List<Pane> tracks;
 	private RaceSummaryView summaryView;

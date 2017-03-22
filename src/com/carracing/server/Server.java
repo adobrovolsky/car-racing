@@ -90,4 +90,9 @@ public class Server {
 	public static void runThread(Runnable task) {
 		executor.execute(task);
 	}
+	
+	public static void main(String[] args) {
+		Server server = new Server();
+		server.start();
+	}
 }
