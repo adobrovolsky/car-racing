@@ -44,17 +44,17 @@ public class RaceOrganizer {
 	/** 
 	 * The maximum number of races.
 	 */
-	private static final int NUMBER_RACES = 10;
+	public static final int NUMBER_RACES = 10;
 	
 	/**
 	 * Delay after the race is finished in seconds.
 	 */
-	private static final int DELAY_AFTER_RACE = 60;
+	public static final int DELAY_AFTER_RACE = 60;
 	
 	/** 
 	 * The percentage of bets which takes the organizer.
 	 */
-	private static final int PERCENT = 5;
+	public static final int PERCENT = 5;
 	
 	/** 
 	 * After how much time will be changing speed cars.

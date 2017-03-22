@@ -19,6 +19,7 @@ import com.carracing.client.RaceService.ActionListener;
 import com.carracing.shared.Command.Action;
 import com.carracing.shared.model.Car;
 import com.carracing.shared.model.Race;
+import com.carracing.shared.model.RaceOrganizer;
 import com.carracing.shared.model.RaceSummary;
 
 import javafx.animation.TranslateTransition;
@@ -130,6 +131,7 @@ public class CarRacing extends StackPane implements ActionListener {
 		});
 		gamePlayer.stop();
 		timerTask.cancel();
+		t.schedule(new CleanerTask(), RaceOrganizer.DELAY_AFTER_RACE * 1000);
 
 		try {
 			URI finishSound = loader.getResource("sounds/start_sound.wav").toURI();
@@ -188,6 +190,19 @@ public class CarRacing extends StackPane implements ActionListener {
 			}
 		});
 		playSound();
+	}
+	
+	private void clear() {
+		tracks.stream().forEach(track -> track.getChildren().clear());
+		getChildren().remove(summaryView);
+		timer.setText("00:00");
+		carLeader.setText("");
+	}
+	
+	private class CleanerTask extends TimerTask {
+		@Override public void run() {
+			Platform.runLater(() -> clear());
+		}
 	}
 	
 	/**
