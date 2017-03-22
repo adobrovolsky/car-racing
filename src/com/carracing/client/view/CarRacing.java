@@ -185,7 +185,8 @@ public class CarRacing extends StackPane implements ActionListener {
 				map.put(car.getId(), carView);
 				
 				TranslateTransition transition = carView.getTransition();
-				transition.setToX(getWidth() - 150);
+				transition.setFromX(-150);
+				transition.setToX(getWidth());
 				transition.play();
 			}
 		});

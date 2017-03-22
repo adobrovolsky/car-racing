@@ -4,6 +4,7 @@ import com.carracing.shared.model.Car;
 import com.carracing.shared.model.Race;
 import com.carracing.shared.model.Car.CarSize;
 
+import javafx.animation.Timeline;
 import javafx.animation.TranslateTransition;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -32,6 +33,7 @@ public class CarView extends Pane {
 		
 		transition = new TranslateTransition();
 		transition.setDuration(Duration.seconds(duration));
+		transition.setCycleCount(Timeline.INDEFINITE);
 		transition.setNode(this);
 	}
 	
@@ -41,12 +43,13 @@ public class CarView extends Pane {
 	
 
 	private int calcDuration(Car car) {
-		int maxDistance = Race.DURATION * Car.MAX_SPEED;
+		int cycle = 10;
+		int maxDistance = cycle * Car.MAX_SPEED;
 		int speed = car.getSpeed();
-		int distance = Race.DURATION * speed;
+		int distance = cycle * speed;
 		int delta = 100 -(distance * 100 / maxDistance);
-		int x = Race.DURATION * delta / 100;
-		int duration = Race.DURATION + x;
+		int x = cycle * delta / 100;
+		int duration = cycle + x;
 		
 		return duration;
 	}
