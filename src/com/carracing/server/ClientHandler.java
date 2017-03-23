@@ -11,8 +11,10 @@ import com.carracing.shared.Command.Action;
 import com.carracing.shared.model.Bet;
 import com.carracing.shared.model.Car;
 import com.carracing.shared.model.Race;
-import com.carracing.shared.model.RaceReport;
 import com.carracing.shared.model.User;
+import com.carracing.shared.model.reports.CarReport;
+import com.carracing.shared.model.reports.GamblerReport;
+import com.carracing.shared.model.reports.RaceReport;
 import com.carracing.shared.network.ReadHandler;
 import com.carracing.shared.network.WriteHandler;
 
@@ -93,11 +95,25 @@ public class ClientHandler implements AutoCloseable {
 			case OBTAIN_ACTIVE_RACE: obtainActiveRace(); break;
 			case OBTAIN_RASES: obtainRaces(); break;
 			case OBTAIN_BETS: obtainBets(command.getData()); break;
-			case OBTAIN_REPORTS: obtainReports(); break;
+			case OBTAIN_RACE_REPORTS: obtainRaceReports(); break;
 			case MAKE_BET: makeBet(command.getData()); break;
 			case LOGIN: login(command.getData()); break;
 			case SIGNUP: signup(command.getData()); break;
+			case OBTAIN_CAR_REPORTS: obtainCarReports(); break;
+			case OBTAIN_GAMBLER_REPORTS: obtainGamblerReports(); break;
 			}
+		}
+
+		private void obtainGamblerReports() {
+			List<GamblerReport> reports = raceService.obtainGamblerReports();
+			Command command = new Command(Action.ADD_GAMBLER_REPORTS, reports);
+			writeHandler.send(command);
+		}
+
+		private void obtainCarReports() {
+			List<CarReport> carReports = raceService.obtainCarReports();
+			Command command = new Command(Action.ADD_CAR_REPORTS, carReports);
+			writeHandler.send(command);
 		}
 
 		private void obtainRaces() {
@@ -118,9 +134,9 @@ public class ClientHandler implements AutoCloseable {
 			writeHandler.send(command);
 		}
 
-		private void obtainReports() {
-			List<RaceReport> raceReports = raceService.obtainReports();
-			Command command = new Command(Action.ADD_REPORTS, raceReports);
+		private void obtainRaceReports() {
+			List<RaceReport> raceReports = raceService.obtainRaceReports();
+			Command command = new Command(Action.ADD_RACE_REPORTS, raceReports);
 			writeHandler.send(command);
 		}
 

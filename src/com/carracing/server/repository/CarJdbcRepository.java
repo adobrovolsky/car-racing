@@ -69,7 +69,7 @@ public class CarJdbcRepository implements Repository<Car> {
 	public boolean update(Car entity) {
 		final String sqlQuery = String.format(
 				"UPDATE car SET color='%s', name='%s', shape='%s', size='%s', type='%s',"
-				+ " race_id=%d distance=%f WHERE id=%d",
+				+ " race_id=%d, distance=%f WHERE id=%d",
 				entity.getColor(), entity.getName(), entity.getShape().toString(), 
 				entity.getSize().toString(), entity.getType().toString(),
 				entity.getRace().getId(), entity.getDistance(), entity.getId());
@@ -129,8 +129,7 @@ public class CarJdbcRepository implements Repository<Car> {
 			this.race = race;
 		}
 
-		@Override
-		public String toSqlQuery() {
+		@Override public String toSqlQuery() {
 			return String.format("SELECT * FROM car WHERE race_id=%d", race.getId());
 		}
 	}

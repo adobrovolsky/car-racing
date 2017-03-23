@@ -1,6 +1,8 @@
-package com.carracing.shared.model;
+package com.carracing.shared.model.reports;
 
-public class RaceReport extends Model<Long> {
+import java.io.Serializable;
+
+public class RaceReport implements Serializable {
 
 	private static final long serialVersionUID = 3L;
 	
@@ -9,10 +11,17 @@ public class RaceReport extends Model<Long> {
 	private String carName;
 	private double systemProfit;
 	private String raceName;
-	
+	private String date;
 
 	public RaceReport() {}
+	
+	public String getDate() {
+		return date;
+	}
 
+	public void setDate(String date) {
+		this.date = date;
+	}
 
 	public int getTotalBets() {
 		return totalBets;

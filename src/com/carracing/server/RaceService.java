@@ -3,7 +3,6 @@ package com.carracing.server;
 import java.util.List;
 
 import com.carracing.server.repository.ReportsJdbcRepository;
-import com.carracing.server.repository.ReportsJdbcRepository.SelectAllRaceReportsQuery;
 import com.carracing.server.repository.Repository;
 import com.carracing.server.repository.Specification;
 import com.carracing.server.repository.UserJdbcRepository;
@@ -12,22 +11,24 @@ import com.carracing.shared.model.Bet;
 import com.carracing.shared.model.Car;
 import com.carracing.shared.model.Race;
 import com.carracing.shared.model.RaceOrganizer;
-import com.carracing.shared.model.RaceReport;
 import com.carracing.shared.model.User;
+import com.carracing.shared.model.reports.CarReport;
+import com.carracing.shared.model.reports.GamblerReport;
+import com.carracing.shared.model.reports.RaceReport;
 
 
 public class RaceService {
 	
 	private final RaceOrganizer organizer;
 	private static volatile RaceService instance;
+	
 	private final Repository<User> userRepository = new UserJdbcRepository();
-	private final Repository<RaceReport> reportsRepository = new ReportsJdbcRepository();
+	private final ReportsJdbcRepository reportsRepository = new ReportsJdbcRepository();
 	
 	private RaceService() {
 		organizer = new RaceOrganizer();
 		organizer.initialize();
 	}
-	
 	
 	public static RaceService getInstance() {
 		if (instance == null) {
@@ -52,11 +53,6 @@ public class RaceService {
 		return organizer.getBetsByCar(car);
 	}
 	
-	public List<RaceReport> obtainReports() {
-		List<RaceReport> reports = reportsRepository.query(new SelectAllRaceReportsQuery());
-		return reports;
-	}
-	
 	public void makeBet(final Bet bet) {
 		organizer.makeBet(bet);
 	}
@@ -74,5 +70,19 @@ public class RaceService {
 	
 	public RaceOrganizer getRaceOrganizer() {
 		return organizer;
+	}
+
+
+	public List<CarReport> obtainCarReports() {
+		return reportsRepository.selectAllCarReports();
+	}
+
+
+	public List<GamblerReport> obtainGamblerReports() {
+		return reportsRepository.selectAllGamblerReports();
+	}
+	
+	public List<RaceReport> obtainRaceReports() {
+		return reportsRepository.selectAllRaceReports();
 	}
 }

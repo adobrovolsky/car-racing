@@ -29,6 +29,7 @@ import com.carracing.server.repository.Repository;
 import com.carracing.shared.Command;
 import com.carracing.shared.Command.Action;
 import com.carracing.shared.model.Race.RaceStatus;
+import com.carracing.shared.model.reports.RaceReport;
 
 public class RaceOrganizer {
 	
@@ -172,11 +173,12 @@ public class RaceOrganizer {
 		report.setSystemProfit(systemProfit);
 		report.setTotalBets(bets.getCountBets());
 		report.setRaceName(race.toString());
+		report.setDate(race.getStarted().toString());
 		
 		summaryRepo.add(summary);
 		
 		Server.notifyClients(new Command(Action.FINISH_GAME, summary));
-		Server.notifyClients(new Command(Action.ADD_REPORT, report));
+		Server.notifyClients(new Command(Action.ADD_RACE_REPORT, report));
 	}
 	
 	/**
@@ -274,6 +276,7 @@ public class RaceOrganizer {
 
 	public void saveRace(Race race) {
 		raceRepo.update(race);
+		race.getCars().stream().forEach(car -> carRepo.update(car));
 	}
 
 	public void setActiveRace(Race race) {

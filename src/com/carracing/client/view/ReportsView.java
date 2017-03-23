@@ -6,7 +6,7 @@ import java.util.List;
 import com.carracing.client.RaceService;
 import com.carracing.shared.Command;
 import com.carracing.shared.Command.Action;
-import com.carracing.shared.model.RaceReport;
+import com.carracing.shared.model.reports.RaceReport;
 
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -15,8 +15,10 @@ import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
 /**
@@ -29,22 +31,25 @@ public class ReportsView extends VBox {
 	@FXML private Label totalSystemProfitView;
 	@FXML private Label completedRacesView;
 	@FXML private Label racesReadyToStartView;
-	@FXML private TableView<RaceReport> reportsTable;
-	@FXML private TableColumn<RaceReport, String> raceColumn;
-	@FXML private TableColumn<RaceReport, Integer> totalBetsColumn;
-	@FXML private TableColumn<RaceReport, Integer> amountBetsColumn;
-	@FXML private TableColumn<RaceReport, String> winnerColumn;
-	@FXML private TableColumn<RaceReport, Double> systemProfitColumn;
+	@FXML private Tab raceResultsTab;
+	@FXML private Tab gamblersTab;
+	@FXML private Tab carsTab;
+	@FXML private Tab racesTab;
+
 	
 	private final RaceService service = RaceService.getInstance();
+	
 	private double totalSystemProfit;
 	private int completedRaces;
 	
 	public ReportsView() {
 		infliteLayout();
-		configureTableColumns();
+		raceResultsTab.setContent(new Pane());
+		gamblersTab.setContent(new GamblerReportView());
+		carsTab.setContent(new CarReportView());
+		racesTab.setContent(new RaceReportView());
 		
-		service.addListener(Action.ADD_REPORTS, (a, d) -> {
+		service.addListener(Action.ADD_RACE_REPORTS, (a, d) -> {
 			Platform.runLater(() -> {
 				List<RaceReport> reports = (List<RaceReport>) d;
 				
@@ -56,11 +61,10 @@ public class ReportsView extends VBox {
 				
 				totalSystemProfitView.setText(totalSystemProfit + "");
 				completedRacesView.setText(completedRaces + "");
-				reportsTable.setItems(FXCollections.observableArrayList(reports));
 			});
 		});
 		
-		service.addListener(Action.ADD_REPORT, (a, d) -> {
+		service.addListener(Action.ADD_RACE_REPORT, (a, d) -> {
 			Platform.runLater(() -> {
 				RaceReport report = (RaceReport) d;
 				totalSystemProfit += report.getSystemProfit();
@@ -68,28 +72,8 @@ public class ReportsView extends VBox {
 				
 				totalSystemProfitView.setText(totalSystemProfit + "");
 				completedRacesView.setText(completedRaces + "");
-				reportsTable.getItems().add(report);
 			});
 		});
-		
-		service.send(new Command(Action.OBTAIN_REPORTS));
-	}
-	
-	private void configureTableColumns() {
-		raceColumn.setCellValueFactory(d -> 
-			new ReadOnlyStringWrapper(d.getValue().getRaceName()));
-
-		totalBetsColumn.setCellValueFactory(d -> 
-			new ReadOnlyObjectWrapper<Integer>(d.getValue().getTotalBets()));
-
-		amountBetsColumn.setCellValueFactory(d ->
-			new ReadOnlyObjectWrapper<Integer>(d.getValue().getAmountBets()));
-
-		winnerColumn.setCellValueFactory(d ->
-			new ReadOnlyStringWrapper(d.getValue().getCarName()));
-
-		systemProfitColumn.setCellValueFactory(d -> 
-			new ReadOnlyObjectWrapper<Double>(d.getValue().getSystemProfit()));
 	}
 
 	/**
