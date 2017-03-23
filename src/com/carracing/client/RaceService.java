@@ -124,9 +124,10 @@ public class RaceService implements AutoCloseable {
 		 Set<ActionListener> set = listeners.get(action);
 		 if (set == null) {
 			 set = new HashSet<>();
+			 listeners.put(action, set);
 		 }
 		 set.add(listener);
-		 listeners.put(action, set);
+		 
 	}
 	
 	public void removeListener(Action action, ActionListener listener) {

@@ -343,6 +343,7 @@ public class RaceOrganizer {
 		if (map.size() > 2 && !race.isReady()) {
 			race.setStatus(RaceStatus.READY);
 			raceRepo.update(race);
+			bet.setRaceStateChanged(true);
 		}
 
 		nextRace();

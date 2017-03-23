@@ -81,7 +81,6 @@ public class MainController implements ActionListener {
 		service.addListener(Action.ADD_RACES, this);
 		service.addListener(Action.FINISH_GAME, this);
 		service.addListener(Action.ADD_USER, this);
-		service.send(new Command(Action.OBTAIN_RASES));
 
 		racesListView.getSelectionModel().selectedItemProperty().addListener((o, oldVal, newVal) -> {
 			ObservableList<Node> children = carsContainer.getChildren();
@@ -110,6 +109,7 @@ public class MainController implements ActionListener {
 		
 		showNewWindow(new CarRacing(), CarRacing.TITLE);
 		showNewWindow(new ReportsView(), ReportsView.TITLE);
+		service.send(new Command(Action.OBTAIN_RASES));
 	}
 	
 	private void showNewWindow(Parent parent, String title) {

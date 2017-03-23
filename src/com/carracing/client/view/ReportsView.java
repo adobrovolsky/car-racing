@@ -4,20 +4,16 @@ import java.io.IOException;
 import java.util.List;
 
 import com.carracing.client.RaceService;
-import com.carracing.shared.Command;
 import com.carracing.shared.Command.Action;
+import com.carracing.shared.model.Bet;
+import com.carracing.shared.model.Race;
 import com.carracing.shared.model.reports.RaceReport;
 
 import javafx.application.Platform;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.ReadOnlyStringWrapper;
-import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
@@ -36,11 +32,11 @@ public class ReportsView extends VBox {
 	@FXML private Tab carsTab;
 	@FXML private Tab racesTab;
 
-	
 	private final RaceService service = RaceService.getInstance();
 	
 	private double totalSystemProfit;
 	private int completedRaces;
+	private long racesReadyToStart;
 	
 	public ReportsView() {
 		infliteLayout();
@@ -48,6 +44,28 @@ public class ReportsView extends VBox {
 		gamblersTab.setContent(new GamblerReportView());
 		carsTab.setContent(new CarReportView());
 		racesTab.setContent(new RaceReportView());
+		
+		service.addListener(Action.ADD_ACTIVE_RACE, (a, d) -> {
+			Platform.runLater(() -> {
+				racesReadyToStartView.setText(--racesReadyToStart + "");
+			});
+		});
+		
+		service.addListener(Action.ADD_BET, (a, d) -> {
+			Platform.runLater(() -> {
+				Bet bet = (Bet) d;
+				if (bet.isRaceStateChanged()) {
+					racesReadyToStartView.setText(++racesReadyToStart + "");
+				}
+			});
+		});
+		
+		service.addListener(Action.ADD_RACES, (a, d) -> {
+			Platform.runLater( () -> {
+				racesReadyToStart = ((List<Race>)d).stream().filter(race -> race.isReady()).count();
+				racesReadyToStartView.setText(racesReadyToStart + "");
+			});
+		});
 		
 		service.addListener(Action.ADD_RACE_REPORTS, (a, d) -> {
 			Platform.runLater(() -> {

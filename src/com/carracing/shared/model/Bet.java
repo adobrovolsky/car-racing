@@ -7,6 +7,7 @@ public class Bet extends Model<Long> {
 	private int amount;
 	private User user;
 	private Car car;
+	private boolean raceStateChanged;
 	
 	public Bet() {}
 	
@@ -14,6 +15,14 @@ public class Bet extends Model<Long> {
 		this.amount = amount;
 		this.user = user;
 		this.car = car;
+	}
+	
+	public boolean isRaceStateChanged() {
+		return raceStateChanged;
+	}
+	
+	public void setRaceStateChanged(boolean f) {
+		this.raceStateChanged = f;
 	}
 	
 	@Override
