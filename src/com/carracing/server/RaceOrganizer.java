@@ -1,4 +1,4 @@
-package com.carracing.shared.model;
+package com.carracing.server;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,7 +17,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.carracing.server.Server;
 import com.carracing.server.repository.BetJdbcRepository;
 import com.carracing.server.repository.BetJdbcRepository.SelectBetsByCar;
 import com.carracing.server.repository.CarJdbcRepository;
@@ -27,6 +26,11 @@ import com.carracing.server.repository.RaceSummaryJdbcRepository;
 import com.carracing.server.repository.Repository;
 import com.carracing.shared.Command;
 import com.carracing.shared.Command.Action;
+import com.carracing.shared.model.Bet;
+import com.carracing.shared.model.Car;
+import com.carracing.shared.model.Race;
+import com.carracing.shared.model.RaceSummary;
+import com.carracing.shared.model.User;
 import com.carracing.shared.model.Race.RaceStatus;
 import com.carracing.shared.model.reports.RaceReport;
 
@@ -51,7 +55,7 @@ public class RaceOrganizer {
 	/**
 	 * Delay after the race is finished in seconds.
 	 */
-	public static final int DELAY_AFTER_RACE = 10;
+	public static final int DELAY_AFTER_RACE = 60;
 	
 	/** 
 	 * The percentage of bets which takes the organizer.
@@ -61,7 +65,7 @@ public class RaceOrganizer {
 	/** 
 	 * After how much time will be changing speed cars.
 	 */
-	public static final int CHANGE_SPEED_INTERVAL = 10;
+	public static final int CHANGE_SPEED_INTERVAL = 30;
 	
 	private final List<Race> races = new ArrayList<>(NUMBER_RACES);
 	private final Map<Race, BetsByCarMap> betsMap = new HashMap<>();

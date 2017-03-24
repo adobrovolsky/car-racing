@@ -1,7 +1,5 @@
 package com.carracing.client;
 
-import com.carracing.client.controller.MainController;
-
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -24,9 +22,6 @@ public class Client extends Application {
 	public void start(Stage primaryStage) throws Exception {
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("view/main.fxml"));
 		Parent parent = loader.load();
-		MainController controller = loader.getController();
-		controller.setStage(primaryStage);
-		
 		Scene scene = new Scene(parent);
 		
 		primaryStage.setTitle(TITLE);

@@ -9,6 +9,7 @@ import com.carracing.client.RaceService;
 import com.carracing.client.RaceService.ActionListener;
 import com.carracing.client.view.CarInfoView;
 import com.carracing.client.view.CarRacing;
+import com.carracing.client.view.LoginView;
 import com.carracing.client.view.ReportsView;
 import com.carracing.shared.Command;
 import com.carracing.shared.Command.Action;
@@ -22,17 +23,15 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SplitPane;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class MainController implements ActionListener {
@@ -44,41 +43,43 @@ public class MainController implements ActionListener {
 	@FXML private VBox carsContainer;
 	@FXML private Label greeting;
 	@FXML private SplitPane splitPane;
+	@FXML private StackPane mainPane;
+	@FXML private AnchorPane contentPane;
 	
-	private Scene loginScene;
-	private Scene signupScene;
-	private Stage userStage;
-	private Stage stage;
-	
-	public void showLogin() {
-		userStage.setTitle(UserController.TITLE_LOGIN);
-		userStage.setScene(loginScene);
-		userStage.show();
-	}
-	
-	public void showSignup() {
-		userStage.setTitle(UserController.TITLE_SIUNUP);
-		userStage.setScene(signupScene);
-		userStage.show();
-	}
-	
-	public void setStage(Stage stage) {
-		this.stage = stage;
-	}
+	private LoginView loginView;
 	
 	@FXML private void handleAddRace(ActionEvent event) {
 		showRaceWindow(new CarRacing());
 	}
-
-	@FXML public void handleLoginAction(ActionEvent event) {
-		showLogin();
-	}
-
-	@FXML public void handleSignupAction(ActionEvent event) {
-		showSignup();
-	}
-
+	
 	public void initialize() {
+		loginView = new LoginView();
+		mainPane.getChildren().add(loginView);
+		showLoginPane();
+		
+		service.addListener(Action.ADD_USER, (a, d) -> {
+			Platform.runLater(() -> {
+				if(d != null) {
+					User user = (User) d;
+					greeting.setText("Hello " + user.getFullname() + "!");
+					showContent();
+					init();
+				}
+			});
+		});
+	}
+	
+	private void showLoginPane() {
+		contentPane.setVisible(false);
+		loginView.setVisible(true);
+	}
+	
+	private void showContent() {
+		loginView.setVisible(false);
+		contentPane.setVisible(true);
+	}
+
+	public void init() {
 		splitPane.setDividerPosition(0, 0.2);
 		for (int i = 0; i < Race.NUMBER_CARS; i++) {
 			carsContainer.getChildren().add(new CarInfoView());
@@ -86,7 +87,6 @@ public class MainController implements ActionListener {
 		
 		service.addListener(Action.ADD_RACES, this);
 		service.addListener(Action.FINISH_GAME, this);
-		service.addListener(Action.ADD_USER, this);
 		service.addListener(Action.ADD_ACTIVE_RACE, this);
 
 		racesListView.getSelectionModel().selectedItemProperty().addListener((o, oldVal, newVal) -> {
@@ -98,26 +98,11 @@ public class MainController implements ActionListener {
 			}
 		});
 		
-		try {
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("../view/login.fxml"));
-			Parent loginRoot = loader.load();
-			loginScene = new Scene(loginRoot);
-			
-			FXMLLoader loader2 = new FXMLLoader(getClass().getResource("../view/signup.fxml"));
-			Parent singupRoot = loader2.load();
-			signupScene = new Scene(singupRoot);
-			
-			userStage = new Stage();
-			userStage.initModality(Modality.WINDOW_MODAL);
-			userStage.initOwner(stage);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
 		showRaceWindow(new CarRacing());
 		showRaceWindow(new CarRacing());
 		showRaceWindow(new CarRacing());
 		createStage(new ReportsView(), ReportsView.TITLE).show();
+		
 		service.send(new Command(Action.OBTAIN_RASES));
 	}
 	
@@ -145,7 +130,6 @@ public class MainController implements ActionListener {
 			switch (action) {
 			case ADD_RACES: handleAddRaces((List<Race>) data); break;
 			case FINISH_GAME: handleFinishGame((RaceSummary) data); break;
-			case ADD_USER: handleAddUser(data); break;
 			case ADD_ACTIVE_RACE: handleAddActiveRace((Race) data); break;
 			}
 		});
@@ -163,13 +147,6 @@ public class MainController implements ActionListener {
 			stage.setOnCloseRequest(e -> carRacing.close());
 			stage.show();
 			carRacing.startRace(race);
-		}
-	}
-
-	private void handleAddUser(Object data) {
-		if(data != null) {
-			User user = (User) data;
-			greeting.setText("Hello " + user.getFullname() + "!");
 		}
 	}
 

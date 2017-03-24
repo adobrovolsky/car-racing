@@ -18,7 +18,7 @@ public class Race extends Model<Long> {
 	public static final int NUMBER_CARS = 5;
 	
 	/** The duration of a race in seconds */
-	public static final int DURATION = 20;
+	public static final int DURATION = 100;
 	
 	public static final int NUMBER_SOUNDS = 10;
 	

@@ -16,44 +16,43 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 
-public class LoginView {
+public class LoginView extends StackPane {
 	
 	public static final String TITLE_LOGIN = "Login";
 	public static final String TITLE_SIUNUP = "Sign up";
 	
 	@FXML private TextField fullname;
-	@FXML private TextField login;
-	@FXML private PasswordField password;
+	@FXML private TextField login1;
+	@FXML private PasswordField password1;
+	@FXML private TextField login2;
+	@FXML private PasswordField password2;
 	@FXML private Label errorMessage;
 	@FXML private StackPane errorContainer;
+	@FXML private Label errorMessage1;
+	@FXML private StackPane errorContainer1;
+	@FXML private AnchorPane loginPane;
+	@FXML private AnchorPane signupPane;
 	
 	private final RaceService service = RaceService.getInstance();
-	private Window mod;
-	private Scene loginScene;
-	private Scene signupScene;
-	private Stage stage;
 	
 	public LoginView() {
-		this(null);
-	}
-	
-	public LoginView(Window parent) {
-		this.mod = parent;
 		inflateLayout();
+		showLoginPane();
+		
 		service.addListener(Action.ADD_USER,  (a, d) -> {
 			Platform.runLater(() -> {
 				if (d == null) {
-					errorMessage.setText("Incorrect login or password!");
-					errorContainer.setVisible(true);
+					errorMessage1.setText("Incorrect login or password!");
+					errorContainer1.setVisible(true);
 				} else {
-					errorContainer.setVisible(false);
-					service.setUser((User)d);
-					stage.close();
+					errorContainer1.setVisible(false);
+					service.setUser((User)d );
 				}
 			});
 		});
@@ -63,7 +62,7 @@ public class LoginView {
 				boolean successful = (boolean) d;
 				if (successful) {
 					errorContainer.setVisible(false);
-					showLogin();
+					showLoginPane();
 				} else {
 					errorMessage.setText("Incorrect entered data");
 					errorContainer.setVisible(true);
@@ -72,23 +71,20 @@ public class LoginView {
 		});
 	}
 	
-	public void showLogin() {
-		stage.setTitle(TITLE_LOGIN);
-		stage.setScene(loginScene);
-		stage.show();
+	private void showLoginPane() {
+		signupPane.setVisible(false);
+		loginPane.setVisible(true);
 	}
 	
-	public void showSignup() {
-		stage.setTitle(TITLE_SIUNUP);
-		stage.setScene(signupScene);
-		stage.show();
+	private void showSignupPane() {
+		loginPane.setVisible(false);
+		signupPane.setVisible(true);
 	}
 	
-
 	@FXML private void handleLogin(ActionEvent event) {
 		User newUser = new User();
-		newUser.setLogin(login.getText());
-		newUser.setPassword(password.getText());
+		newUser.setLogin(login1.getText());
+		newUser.setPassword(password1.getText());
 
 		service.send(new Command(Action.LOGIN, newUser));
 	}
@@ -96,40 +92,29 @@ public class LoginView {
 	@FXML private void handleSignUp(ActionEvent event) {
 		User newUser = new User();
 		newUser.setFullname(fullname.getText());
-		newUser.setLogin(login.getText());
-		newUser.setPassword(password.getText());
+		newUser.setLogin(login2.getText());
+		newUser.setPassword(password2.getText());
 		
 		service.send(new Command(Action.SIGNUP, newUser));
 	}
 	
 	@FXML private void showLoginForm(ActionEvent event) {
-		showLogin();
+		showLoginPane();
 	}
 
 	@FXML private void showSignupForm(ActionEvent event) {
-		showSignup();
+		showSignupPane();
 	}
-
 
 	private void inflateLayout() {
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("login.fxml"));
-		
-		FXMLLoader loader2 = new FXMLLoader(getClass().getResource("signup.fxml"));
+		loader.setRoot(this);
+		loader.setController(this);
 		
 		try {
-			Parent loginRoot = loader.load();
-			loginScene = new Scene(loginRoot);
-			
-			Parent singupRoot = loader2.load();
-			signupScene = new Scene(singupRoot);
-			
-			stage = new Stage();
-			//stage.initModality(Modality.WINDOW_MODAL);
-			//stage.initOwner(mod);
-				
+			loader.load();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
-
 }

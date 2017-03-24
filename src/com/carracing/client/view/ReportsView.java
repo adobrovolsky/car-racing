@@ -47,7 +47,8 @@ public class ReportsView extends VBox {
 		
 		service.addListener(Action.ADD_ACTIVE_RACE, (a, d) -> {
 			Platform.runLater(() -> {
-				racesReadyToStartView.setText(--racesReadyToStart + "");
+				racesReadyToStart--;
+				racesReadyToStartView.setText(racesReadyToStart + "");
 			});
 		});
 		
@@ -55,7 +56,8 @@ public class ReportsView extends VBox {
 			Platform.runLater(() -> {
 				Bet bet = (Bet) d;
 				if (bet.isRaceStateChanged()) {
-					racesReadyToStartView.setText(++racesReadyToStart + "");
+					racesReadyToStart++;
+					racesReadyToStartView.setText(racesReadyToStart + "");
 				}
 			});
 		});

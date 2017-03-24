@@ -10,7 +10,6 @@ import com.carracing.server.repository.UserJdbcRepository.SelectUserByLoginAndPa
 import com.carracing.shared.model.Bet;
 import com.carracing.shared.model.Car;
 import com.carracing.shared.model.Race;
-import com.carracing.shared.model.RaceOrganizer;
 import com.carracing.shared.model.User;
 import com.carracing.shared.model.reports.CarReport;
 import com.carracing.shared.model.reports.GamblerReport;

@@ -19,10 +19,10 @@ import java.util.TimerTask;
 import com.carracing.client.Client;
 import com.carracing.client.RaceService;
 import com.carracing.client.RaceService.ActionListener;
+import com.carracing.server.RaceOrganizer;
 import com.carracing.shared.Command.Action;
 import com.carracing.shared.model.Car;
 import com.carracing.shared.model.Race;
-import com.carracing.shared.model.RaceOrganizer;
 import com.carracing.shared.model.RaceSummary;
 
 import javafx.animation.TranslateTransition;
