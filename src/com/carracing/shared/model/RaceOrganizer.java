@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +30,8 @@ import com.carracing.shared.Command.Action;
 import com.carracing.shared.model.Race.RaceStatus;
 import com.carracing.shared.model.reports.RaceReport;
 
+import static com.carracing.shared.model.Race.*;
+
 public class RaceOrganizer {
 	
 	private static final Logger LOGGER = Logger.getLogger(RaceOrganizer.class.getSimpleName());
@@ -50,7 +51,7 @@ public class RaceOrganizer {
 	/**
 	 * Delay after the race is finished in seconds.
 	 */
-	public static final int DELAY_AFTER_RACE = 60;
+	public static final int DELAY_AFTER_RACE = 10;
 	
 	/** 
 	 * The percentage of bets which takes the organizer.
@@ -60,7 +61,7 @@ public class RaceOrganizer {
 	/** 
 	 * After how much time will be changing speed cars.
 	 */
-	public static final int CHANGE_SPEED_INTERVAL = 30;
+	public static final int CHANGE_SPEED_INTERVAL = 10;
 	
 	private final List<Race> races = new ArrayList<>(NUMBER_RACES);
 	private final Map<Race, BetsByCarMap> betsMap = new HashMap<>();
@@ -113,21 +114,21 @@ public class RaceOrganizer {
 				
 				organizer.setActiveRace(race);
 				race.start();
+				race.calcDistance(CHANGE_SPEED_INTERVAL);
 				
 				Server.notifyClients(new Command(Action.ADD_ACTIVE_RACE, race));
 				
-				int repeat = Race.DURATION / RaceOrganizer.CHANGE_SPEED_INTERVAL;
+				int repeat = DURATION / CHANGE_SPEED_INTERVAL;
 				for (int i = 0; i < repeat; i++) {
 					TimeUnit.SECONDS.sleep(CHANGE_SPEED_INTERVAL);
-					race.calcDistance(CHANGE_SPEED_INTERVAL);
 					race.randomSpeed();
+					race.calcDistance(CHANGE_SPEED_INTERVAL);
 					
-					Command command = new Command(Action.CHANGE_SPEED, race.getCars());
-					Server.notifyClients(command);
+					Server.notifyClients(new Command(Action.CHANGE_SPEED, race.getCars()));
 				}
 				
-				if (Race.DURATION % RaceOrganizer.CHANGE_SPEED_INTERVAL != 0) {
-					int x = Race.DURATION -(RaceOrganizer.CHANGE_SPEED_INTERVAL * repeat);
+				if (DURATION % CHANGE_SPEED_INTERVAL != 0) {
+					int x = DURATION -(CHANGE_SPEED_INTERVAL * repeat);
 					race.calcDistance(x);
 				}
 				

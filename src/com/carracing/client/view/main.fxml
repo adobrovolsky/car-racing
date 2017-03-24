@@ -27,6 +27,7 @@
          <children>
             <HBox alignment="CENTER_RIGHT" nodeOrientation="LEFT_TO_RIGHT" prefHeight="100.0" prefWidth="200.0" spacing="10.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT">
                <children>
+                  <Button fx:id="btnAddRace" mnemonicParsing="false" onAction="#handleAddRace" text="Add race" />
                 <Button fx:id="btnLogin" mnemonicParsing="false" onAction="#handleLoginAction" prefWidth="70.0" text="Login" />
                   <Button fx:id="btnSignup" mnemonicParsing="false" onAction="#handleSignupAction" prefWidth="70.0" text="Sign up" />
                </children>

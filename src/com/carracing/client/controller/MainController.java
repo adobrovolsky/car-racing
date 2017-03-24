@@ -1,7 +1,9 @@
 package com.carracing.client.controller;
 
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 import com.carracing.client.RaceService;
 import com.carracing.client.RaceService.ActionListener;
@@ -24,18 +26,19 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 
 public class MainController implements ActionListener {
 
 	private final RaceService service = RaceService.getInstance();
+	private final Queue<Stage> windowQueue = new LinkedList<>();
 
 	@FXML private ListView<Race> racesListView;
 	@FXML private VBox carsContainer;
@@ -45,7 +48,6 @@ public class MainController implements ActionListener {
 	private Scene loginScene;
 	private Scene signupScene;
 	private Stage userStage;
-	
 	private Stage stage;
 	
 	public void showLogin() {
@@ -63,6 +65,10 @@ public class MainController implements ActionListener {
 	public void setStage(Stage stage) {
 		this.stage = stage;
 	}
+	
+	@FXML private void handleAddRace(ActionEvent event) {
+		showRaceWindow(new CarRacing());
+	}
 
 	@FXML public void handleLoginAction(ActionEvent event) {
 		showLogin();
@@ -73,7 +79,7 @@ public class MainController implements ActionListener {
 	}
 
 	public void initialize() {
-		splitPane.setDividerPosition(0, 0.3);
+		splitPane.setDividerPosition(0, 0.2);
 		for (int i = 0; i < Race.NUMBER_CARS; i++) {
 			carsContainer.getChildren().add(new CarInfoView());
 		}
@@ -81,6 +87,7 @@ public class MainController implements ActionListener {
 		service.addListener(Action.ADD_RACES, this);
 		service.addListener(Action.FINISH_GAME, this);
 		service.addListener(Action.ADD_USER, this);
+		service.addListener(Action.ADD_ACTIVE_RACE, this);
 
 		racesListView.getSelectionModel().selectedItemProperty().addListener((o, oldVal, newVal) -> {
 			ObservableList<Node> children = carsContainer.getChildren();
@@ -107,17 +114,29 @@ public class MainController implements ActionListener {
 			e.printStackTrace();
 		}
 		
-		showNewWindow(new CarRacing(), CarRacing.TITLE);
-		showNewWindow(new ReportsView(), ReportsView.TITLE);
+		showRaceWindow(new CarRacing());
+		showRaceWindow(new CarRacing());
+		showRaceWindow(new CarRacing());
+		createStage(new ReportsView(), ReportsView.TITLE).show();
 		service.send(new Command(Action.OBTAIN_RASES));
 	}
 	
-	private void showNewWindow(Parent parent, String title) {
+	private void showRaceWindow(CarRacing carRacing) {
+		Stage stage = createStage(carRacing, CarRacing.TITLE);
+		stage.setOnCloseRequest(e -> {
+			windowQueue.remove(stage);
+			carRacing.close();
+		});
+		windowQueue.add(stage);
+		stage.show();
+	}
+		
+	private Stage createStage(Parent parent, String title) {
 		Scene scene = new Scene(parent);
 		Stage stage = new Stage();
 		stage.setScene(scene);
 		stage.setTitle(title);
-		stage.show();
+		return stage;
 	}
 
 	@Override
@@ -127,10 +146,26 @@ public class MainController implements ActionListener {
 			case ADD_RACES: handleAddRaces((List<Race>) data); break;
 			case FINISH_GAME: handleFinishGame((RaceSummary) data); break;
 			case ADD_USER: handleAddUser(data); break;
+			case ADD_ACTIVE_RACE: handleAddActiveRace((Race) data); break;
 			}
 		});
 	}
 	
+	private void handleAddActiveRace(Race race) {
+		Stage stage = windowQueue.poll();
+		if (stage != null) {
+			stage.setTitle(race.toString());
+			CarRacing carRacing = (CarRacing) stage.getScene().getRoot();
+			carRacing.startRace(race);
+		} else {
+			CarRacing carRacing = new CarRacing();
+			stage = createStage(carRacing, race.toString());
+			stage.setOnCloseRequest(e -> carRacing.close());
+			stage.show();
+			carRacing.startRace(race);
+		}
+	}
+
 	private void handleAddUser(Object data) {
 		if(data != null) {
 			User user = (User) data;

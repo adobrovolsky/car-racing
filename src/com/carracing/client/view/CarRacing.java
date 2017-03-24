@@ -5,10 +5,13 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -31,13 +34,14 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
+import javafx.stage.Stage;
 
 /**
  * This view displays a race in which five cars participate.
  */
 public class CarRacing extends StackPane implements ActionListener {
 
-	public static final String TITLE = "Game";
+	public static final String TITLE = "Race";
 	
 	@FXML private Label carLeader;
 	@FXML private Label timer;
@@ -48,22 +52,31 @@ public class CarRacing extends StackPane implements ActionListener {
 	@FXML private Pane trackFive;
 
 	private final RaceService service = RaceService.getInstance();
-	private MediaPlayer startPlayer, finishPlayer, gamePlayer;
-	private ClassLoader loader = Client.class.getClassLoader();
+	private final ClassLoader loader = Client.class.getClassLoader();
+	private MediaPlayer startPlayer, finishPlayer, racePlayer;
 	private Map<Long, CarView> map = new HashMap<>();
 	private List<Pane> tracks;
-	private RaceSummaryView summaryView;
-	private Race race;
+	private File soundsDir;
+	
 	private Timer t = new Timer();
 	private TimeTask timerTask;
+	private boolean started;
 
 	public CarRacing() {
 		inflateLayout();
 		tracks = Arrays.asList(trackOne, trackTwo, trackThree, trackFour, trackFive);
-
-		service.addListener(Action.ADD_ACTIVE_RACE, this);
-		service.addListener(Action.CHANGE_SPEED, this);
-		service.addListener(Action.FINISH_GAME, this);
+		
+		try {
+			URI dir = loader.getResource("sounds/races").toURI();
+			URI startSound = loader.getResource("sounds/start_sound.wav").toURI();
+			URI finishSound = loader.getResource("sounds/start_sound.wav").toURI();
+			
+			soundsDir = new File(dir);
+			startPlayer = new MediaPlayer(new Media(startSound.toString()));
+			finishPlayer = new MediaPlayer(new Media(finishSound.toString()));
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/**
@@ -85,15 +98,8 @@ public class CarRacing extends StackPane implements ActionListener {
 	public void actionPerformed(Action action, Object data) {
 		Platform.runLater(() -> {
 			switch (action) {
-			case ADD_ACTIVE_RACE:
-				handleAddActiveRace((Race) data);
-				break;
-			case CHANGE_SPEED:
-				handleChangeSpeed((Set<Car>) data);
-				break;
-			case FINISH_GAME:
-				handleFinishGame((RaceSummary) data);
-				break;
+			case CHANGE_SPEED: handleChangeSpeed((Set<Car>) data); break;
+			case FINISH_GAME: handleFinishGame((RaceSummary) data); break;
 			}
 		});
 	}
@@ -102,23 +108,14 @@ public class CarRacing extends StackPane implements ActionListener {
 	 * Plays a sound start of the race. Then randomly 
 	 * chooses the sound for the race itself.
 	 */
-	private void playSound() {
-		try {
-			URI soundsDir = loader.getResource("sounds/races").toURI();
-			URI startSound = loader.getResource("sounds/start_sound.wav").toURI();	
-			File dir = new File(soundsDir);
-			File[] sounds = dir.listFiles();
+	private void playSound(int soundID) {
+		File[] sounds = soundsDir.listFiles();
+		int soundIndex = soundID % sounds.length;
+		URI sound = sounds[soundIndex].toURI();
+		racePlayer = new MediaPlayer(new Media(sound.toString()));
 
-			int soundIndex = race.getSoundID() % sounds.length;
-			URI sound = sounds[soundIndex].toURI();
-			startPlayer = new MediaPlayer(new Media(startSound.toString()));
-			gamePlayer = new MediaPlayer(new Media(sound.toString()));
-
-			startPlayer.play();
-			gamePlayer.play();
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-		}
+		startPlayer.play();
+		racePlayer.play();
 	}
 	
 	/**
@@ -129,22 +126,13 @@ public class CarRacing extends StackPane implements ActionListener {
 		map.entrySet().stream().forEach(entry -> {
 			entry.getValue().getTransition().stop();
 		});
-		gamePlayer.stop();
+		racePlayer.stop();
 		timerTask.cancel();
-		t.schedule(new CleanerTask(), RaceOrganizer.DELAY_AFTER_RACE * 1000);
-
-		try {
-			URI finishSound = loader.getResource("sounds/start_sound.wav").toURI();
-			finishPlayer = new MediaPlayer(new Media(finishSound.toString()));
-			finishPlayer.play();
-
-			summaryView = new RaceSummaryView(summary);
-			getChildren().add(summaryView);
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-		}
-
+		t.schedule(new CloseTask(), RaceOrganizer.DELAY_AFTER_RACE * 1000);
+		finishPlayer.play();
+		getChildren().add(new RaceSummaryView(summary));
 	}
+	
 	/**
 	 * Change the speed of all cars.
 	 * @param cars all cars with new speeds
@@ -161,23 +149,31 @@ public class CarRacing extends StackPane implements ActionListener {
 			else rate = 2 - (oldSpeed / newSpeed);
 			
 			view.getTransition().setRate(rate);
+			carLeader.setText(identifyLeader(cars).toString());
 		});
 	}
 	
+	private Car identifyLeader(Collection<Car> cars) {
+		Optional<Car> leader = cars.stream()
+				.max((x, y) -> Comparator.<Double>naturalOrder()
+				.compare(x.getDistance(), y.getDistance()));
+		
+		return leader.get();
+	}
 	/**
 	 * Creates a {@link CarView} for each car.
 	 * @param race the race that is currently running
 	 */
-	private void handleAddActiveRace(Race race) {
-		this.race = race;
-		getChildren().remove(summaryView);
+	public void startRace(Race race) {
+		started = true;
+		service.addListener(Action.CHANGE_SPEED, this);
+		service.addListener(Action.FINISH_GAME, this);
 		timerTask = new TimeTask();
 		t.schedule(timerTask, 0, 1000);
+		
 		Iterator<Car> cars = race.getCars().iterator();
 
 		tracks.stream().forEach(track -> {
-			track.getChildren().clear();
-
 			if (cars.hasNext()) {
 				Car car = cars.next();
 				CarView carView = new CarView(car);
@@ -185,24 +181,31 @@ public class CarRacing extends StackPane implements ActionListener {
 				map.put(car.getId(), carView);
 				
 				TranslateTransition transition = carView.getTransition();
-				transition.setFromX(-150);
+				transition.setFromX(-180);
 				transition.setToX(getWidth());
 				transition.play();
 			}
 		});
-		playSound();
+		playSound(race.getSoundID());
+		Car leader = identifyLeader(race.getCars());
+		carLeader.setText(leader.toString());
 	}
 	
-	private void clear() {
-		tracks.stream().forEach(track -> track.getChildren().clear());
-		getChildren().remove(summaryView);
-		timer.setText("00:00");
-		carLeader.setText("");
+	public void close() {
+		if (started) {
+			service.removeListener(Action.CHANGE_SPEED, this);
+			service.removeListener(Action.FINISH_GAME, this);
+			t.cancel();
+			racePlayer.stop();
+		}
+		
+		Stage stage = (Stage) getScene().getWindow();
+		stage.close();
 	}
 	
-	private class CleanerTask extends TimerTask {
+	private class CloseTask extends TimerTask {
 		@Override public void run() {
-			Platform.runLater(() -> clear());
+			Platform.runLater(() -> close());
 		}
 	}
 	
