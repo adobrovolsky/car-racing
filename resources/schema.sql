@@ -7,14 +7,14 @@ use carracing;
 
 CREATE TABLE race_summary_user (
   user_id         int(10) NOT NULL, 
-  profit          float(10, 5) NOT NULL, 
+  profit          float NOT NULL, 
   race_summary_id int(10) NOT NULL, 
   PRIMARY KEY (user_id, race_summary_id));
 
 CREATE TABLE race_summary (
   race_id       int(10) NOT NULL, 
   winner        int(10) NOT NULL, 
-  system_profit float(10, 5) NOT NULL, 
+  system_profit float NOT NULL, 
   total_bets    int(10) NOT NULL,
   amount_bets   int(10) NOT NULL,
   id            int(10) NOT NULL AUTO_INCREMENT, 
@@ -51,7 +51,7 @@ CREATE TABLE car (
   color    char(10), 
   shape    varchar(100), 
   `size`   varchar(100), 
-  distance float(10, 5), 
+  distance float, 
   race_id   int(10) NOT NULL, 
   PRIMARY KEY (id));
 
@@ -62,12 +62,3 @@ ALTER TABLE race_summary_user ADD INDEX FKrace_summa574829 (user_id), ADD CONSTR
 ALTER TABLE car ADD INDEX FKcar19579 (race_id), ADD CONSTRAINT FKcar19579 FOREIGN KEY (race_id) REFERENCES race (id);
 ALTER TABLE bet ADD INDEX FKbet330659 (user_id), ADD CONSTRAINT FKbet330659 FOREIGN KEY (user_id) REFERENCES `user` (id);
 ALTER TABLE bet ADD INDEX FKbet630349 (car_id), ADD CONSTRAINT FKbet630349 FOREIGN KEY (car_id) REFERENCES car (id);
-
-
-CREATE VIEW race_report AS 
-  SELECT 
-    CONCAT(r.name, ' ', r.id) AS 'race_name', 
-    rs.total_bets, rs.amount_bets, rs.system_profit, 
-    CONCAT(c.type, '-', c.id, '-', r.id) AS 'car_name'
-  FROM race r, race_summary rs, car c
-  WHERE r.id = rs.race_id && rs.winner = c.id

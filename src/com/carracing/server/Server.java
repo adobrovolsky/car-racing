@@ -88,7 +88,7 @@ public class Server {
 	 * Performs this task through Service Executor.
 	 */
 	public static void runThread(Runnable task) {
-		executor.execute(task);
+		executor.execute(task);	
 	}
 	
 	public static void main(String[] args) {

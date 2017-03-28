@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import com.carracing.server.repository.CarJdbcRepository.SelectCarByIdQuery;
 import com.carracing.server.repository.RaceJdbcRepository.SelectRaceById;
 import com.carracing.server.util.DBUtil;
+import com.carracing.server.util.NumberUtil;
 import com.carracing.shared.model.Car;
 import com.carracing.shared.model.Race;
 import com.carracing.shared.model.RaceSummary;
@@ -29,7 +30,7 @@ public class RaceSummaryJdbcRepository implements Repository<RaceSummary>{
 			.append("INSERT INTO race_summary (race_id, winner, system_profit, total_bets, amount_bets) VALUES (")
 			.append(entity.getRace().getId()).append(", ")
 			.append(entity.getWinner().getId()).append(", ")
-			.append(entity.getSystemProfit()).append(", ")
+			.append(NumberUtil.round(entity.getSystemProfit(), 3)).append(", ")
 			.append(entity.getTotalBets()).append(", ")
 			.append(entity.getAmountBets())
 			.append(")")
@@ -41,7 +42,7 @@ public class RaceSummaryJdbcRepository implements Repository<RaceSummary>{
 			
 			for(Entry<User, Double> entry : entity.getUsers().entrySet()) {
 				long userID = entry.getKey().getId();
-				double userProfit = entry.getValue();
+				double userProfit = NumberUtil.round(entry.getValue(), 3);
 				
 				String query = new StringBuilder()
 					.append("INSERT INTO race_summary_user (race_summary_id, user_id, profit) VALUES (")

@@ -17,7 +17,7 @@ import com.sun.rowset.CachedRowSetImpl;
  * Allows you to send raw requests to the database.
  * Manages the opening and closing of a connection to the database.
  */
-public class DBUtil {
+public final class DBUtil {
 
 	private static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
 	private static final String JDBC_URL = "jdbc:mysql://localhost:3306/carracing";

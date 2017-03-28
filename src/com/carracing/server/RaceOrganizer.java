@@ -56,7 +56,7 @@ public class RaceOrganizer {
 	/**
 	 * Delay after the race is finished in seconds.
 	 */
-	public static final int DELAY_AFTER_RACE = 10;
+	public static final int DELAY_AFTER_RACE = 60;
 	
 	/** 
 	 * The percentage of bets which takes the organizer.
@@ -66,7 +66,7 @@ public class RaceOrganizer {
 	/** 
 	 * After how much time will be changing speed cars.
 	 */
-	public static final int CHANGE_SPEED_INTERVAL = 5;
+	public static final int CHANGE_SPEED_INTERVAL = 30;
 	
 	private final List<Race> races = new ArrayList<>(NUMBER_RACES);
 	private final Map<Race, BetsByCarMap> betsMap = new HashMap<>();
