@@ -134,11 +134,11 @@ public class CarJdbcRepository implements Repository<Car> {
 		}
 	}
 	
-	public static class SelectCarById implements SqlSpecification {
+	public static class SelectCarByIdQuery implements SqlSpecification {
 		
 		private final long id;
 
-		public SelectCarById(long id) {
+		public SelectCarByIdQuery(long id) {
 			this.id = id;
 		}
 

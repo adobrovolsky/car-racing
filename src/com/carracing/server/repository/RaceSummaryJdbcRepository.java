@@ -9,7 +9,7 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.carracing.server.repository.CarJdbcRepository.SelectCarById;
+import com.carracing.server.repository.CarJdbcRepository.SelectCarByIdQuery;
 import com.carracing.server.repository.RaceJdbcRepository.SelectRaceById;
 import com.carracing.server.util.DBUtil;
 import com.carracing.shared.model.Car;
@@ -40,13 +40,17 @@ public class RaceSummaryJdbcRepository implements Repository<RaceSummary>{
 			entity.setId(generatedID);
 			
 			for(Entry<User, Double> entry : entity.getUsers().entrySet()) {
+				long userID = entry.getKey().getId();
+				double userProfit = entry.getValue();
+				
 				String query = new StringBuilder()
 					.append("INSERT INTO race_summary_user (race_summary_id, user_id, profit) VALUES (")
 					.append(entity.getId()).append(", ")
-					.append(entry.getKey().getId()).append(", ")
-					.append(entry.getValue())
+					.append(userID).append(", ")
+					.append(userProfit)
 					.append(")")
 					.toString();
+				
 				DBUtil.executeUpdate(query);
 			}
 		} catch (SQLException e) {
@@ -101,11 +105,13 @@ public class RaceSummaryJdbcRepository implements Repository<RaceSummary>{
 				summary.setId(from.getLong("id"));
 				summary.setAmountBets(from.getInt("amount_bets"));
 				summary.setTotalBets(from.getInt("total_bets"));
+				summary.setSystemProfit(from.getDouble("system_profit"));
+				
 				List<Race> races = raceRepo.query(new SelectRaceById(from.getLong("race_id")));
 				summary.setRace(races.get(0));
-				List<Car> cars = carRepo.query(new SelectCarById(from.getLong("winner")));
+				
+				List<Car> cars = carRepo.query(new SelectCarByIdQuery(from.getLong("winner")));
 				summary.setWinner(cars.get(0));
-				summary.setSystemProfit(from.getDouble("system_profit"));
 				
 				list.add(summary);
 			}

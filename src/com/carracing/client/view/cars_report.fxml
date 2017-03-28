@@ -17,18 +17,18 @@
             <AnchorPane prefHeight="50.0" prefWidth="628.0">
                <children>
                   <Label layoutY="6.0" text="Query" />
-                  <ComboBox fx:id="query" layoutX="46.0" layoutY="1.0" prefWidth="150.0" />
-                  <TextField fx:id="parameter" layoutX="206.0" layoutY="1.0" prefHeight="26.0" prefWidth="115.0" />
-                  <Button fx:id="submit" layoutX="330.0" layoutY="1.0" mnemonicParsing="false" onAction="#submitQuery" text="Submit" />
+                  <ComboBox fx:id="query" layoutX="46.0" layoutY="1.0" prefWidth="220.0" />
+                  <TextField fx:id="parameter" layoutX="275.0" layoutY="1.0" prefHeight="26.0" prefWidth="115.0" />
+                  <Button fx:id="submit" layoutX="399.0" layoutY="1.0" mnemonicParsing="false" onAction="#submitQuery" text="Submit" />
                </children>
             </AnchorPane>
             <TableView fx:id="carsTable" prefHeight="248.0" prefWidth="628.0" VBox.vgrow="ALWAYS">
                <columns>
-                  <TableColumn fx:id="nameColumn" prefWidth="106.0" text="Name" />
-                  <TableColumn fx:id="sizeColumn" prefWidth="108.0" text="Size" />
-                  <TableColumn fx:id="shapeColumn" prefWidth="122.0" text="Shape" />
-                  <TableColumn fx:id="colorColumn" prefWidth="153.0" text="Color" />
-                  <TableColumn fx:id="distanceColumn" prefWidth="160.0" text="Distance" />
+                  <TableColumn fx:id="nameColumn" prefWidth="200.0" text="Name" />
+                  <TableColumn fx:id="sizeColumn" prefWidth="120.0" text="Size" />
+                  <TableColumn fx:id="shapeColumn" prefWidth="120.0" text="Shape" />
+                  <TableColumn fx:id="colorColumn" prefWidth="50.0" text="Color" />
+                  <TableColumn fx:id="distanceColumn" prefWidth="100.0" text="Distance" />
                   <TableColumn fx:id="raceColumn" prefWidth="75.0" text="Race" />
                </columns>
             </TableView>

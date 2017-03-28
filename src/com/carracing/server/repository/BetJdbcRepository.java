@@ -5,9 +5,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.carracing.server.repository.CarJdbcRepository.SelectCarByIdQuery;
 import com.carracing.server.util.DBUtil;
 import com.carracing.shared.model.Bet;
 import com.carracing.shared.model.Car;
@@ -87,18 +89,15 @@ public class BetJdbcRepository implements Repository<Bet> {
 	}
 	
 	public static class SelectBetsByCar implements SqlSpecification {
-		
 		private final Car car;
 
 		public SelectBetsByCar(Car car) {
 			this.car = car;
 		}
 
-		@Override
-		public String toSqlQuery() {
+		@Override public String toSqlQuery() {
 			return String.format("SELECT * FROM bet WHERE car_id = %d", car.getId());
 		}
-		
 	}
 
 	public static class BetMapper implements RowMapper<ResultSet, Bet> {
@@ -116,32 +115,36 @@ public class BetJdbcRepository implements Repository<Bet> {
 				bet.setAmount(resultSet.getInt("amount"));
 				
 				long userID = resultSet.getLong("user_id");
-				bet.setUser(loadUser(userID));
+				loadUser(userID).ifPresent(user -> bet.setUser(user));
 				
 				long carID = resultSet.getLong("car_id");
-				bet.setCar(loadCar(carID));
+				loadCar(carID).ifPresent(car -> bet.setCar(car));
 				
 				bets.add(bet);
 			}
 			return bets;
 		}
 		
-		private User loadUser(long id) {
+		private Optional<User> loadUser(long id) {
 			List<User> users = userRepository.query(new SqlSpecification() {
 				@Override public String toSqlQuery() {
 					return "SELECT * FROM user WHERE id = " + id;
 				}
 			});
-			return users.get(0);
+			
+			if (users.isEmpty()) {
+				return Optional.empty();
+			}
+			return Optional.of(users.get(0));
 		}
 		
-		private Car loadCar(long id) {
-			List<Car> cars = carRepository.query(new SqlSpecification() {
-				@Override public String toSqlQuery() {
-					return "SELECT * FROM car WHERE id = " + id;
-				}
-			});
-			return cars.get(0);
+		private Optional<Car> loadCar(long id) {
+			List<Car> cars = carRepository.query(new SelectCarByIdQuery(id));
+			
+			if (cars.isEmpty()) {
+				return Optional.empty();
+			}
+			return Optional.of(cars.get(0));
 		}
 	}
 }

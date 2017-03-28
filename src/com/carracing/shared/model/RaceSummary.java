@@ -12,7 +12,7 @@ public class RaceSummary extends Model<Long> {
 	private Race race;
 	private int totalBets;
 	private int amountBets;
-	private Map<User, Double> userProfit = new HashMap<>();
+	private Map<User, Double> usersProfit = new HashMap<>();
 	
 	@Override
 	public String toString() {
@@ -58,15 +58,15 @@ public class RaceSummary extends Model<Long> {
 	}
 
 	public void addUser(User user, double profit) {
-		userProfit.put(user, profit);
+		usersProfit.put(user, profit);
 	}
 	
 	public Map<User, Double> getUsers() {
-		return userProfit;
+		return usersProfit;
 	}
 	
 	public void setUsers(Map<User, Double> users) {
-		this.userProfit = users;
+		this.usersProfit = users;
 	}
 	
 	public Car getWinner() {

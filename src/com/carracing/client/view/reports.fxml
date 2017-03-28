@@ -24,7 +24,6 @@
           <Tab fx:id="racesTab" text="Races" />
           <Tab fx:id="carsTab" text="Cars" />
             <Tab fx:id="gamblersTab" text="Gamblers" />
-            <Tab fx:id="raceResultsTab" text="Race results" />
         </tabs>
       </TabPane>
    </children>

@@ -27,7 +27,6 @@ public class ReportsView extends VBox {
 	@FXML private Label totalSystemProfitView;
 	@FXML private Label completedRacesView;
 	@FXML private Label racesReadyToStartView;
-	@FXML private Tab raceResultsTab;
 	@FXML private Tab gamblersTab;
 	@FXML private Tab carsTab;
 	@FXML private Tab racesTab;
@@ -40,7 +39,6 @@ public class ReportsView extends VBox {
 	
 	public ReportsView() {
 		infliteLayout();
-		raceResultsTab.setContent(new Pane());
 		gamblersTab.setContent(new GamblerReportView());
 		carsTab.setContent(new CarReportView());
 		racesTab.setContent(new RaceReportView());

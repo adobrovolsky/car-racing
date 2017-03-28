@@ -8,6 +8,7 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
 <fx:root minHeight="0.0" minWidth="0.0" type="AnchorPane" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1">
@@ -17,18 +18,34 @@
             <AnchorPane prefHeight="50.0" prefWidth="628.0">
                <children>
                   <Label layoutY="6.0" text="Query" />
-                  <ComboBox fx:id="query" layoutX="46.0" layoutY="1.0" prefWidth="150.0" />
-                  <TextField fx:id="parameter" layoutX="206.0" layoutY="1.0" prefHeight="26.0" prefWidth="115.0" />
-                  <Button fx:id="submit" layoutX="330.0" layoutY="1.0" mnemonicParsing="false" onAction="#submitQuery" text="Submit" />
+                  <ComboBox fx:id="query" layoutX="46.0" layoutY="1.0" prefWidth="220.0" />
+                  <TextField fx:id="parameter" layoutX="275.0" layoutY="1.0" prefHeight="26.0" prefWidth="115.0" />
+                  <Button fx:id="submit" layoutX="399.0" layoutY="1.0" mnemonicParsing="false" onAction="#submitQuery" text="Submit" />
                </children>
             </AnchorPane>
             <TableView fx:id="gamblersTable" prefHeight="248.0" prefWidth="628.0" VBox.vgrow="ALWAYS">
                <columns>
                   <TableColumn fx:id="nameColumn" prefWidth="243.0" text="Name" />
-                  <TableColumn fx:id="profitColumn" prefWidth="179.0" text="Profit" />
+                  <TableColumn fx:id="totalProfitColumn" prefWidth="179.0" text="Total profit" />
                   <TableColumn fx:id="numberRacesColumn" prefWidth="159.0" text="Number races" />
                </columns>
             </TableView>
+            <HBox minHeight="200.0" prefHeight="100.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+               <children>
+                  <TableView fx:id="racesTable" prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
+                    <columns>
+                      <TableColumn fx:id="raceNameColumn" prefWidth="143.0" text="Race name" />
+                      <TableColumn fx:id="profitColumn" prefWidth="170.0" text="Profit" />
+                    </columns>
+                  </TableView>
+                  <TableView fx:id="carsTable" prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
+                    <columns>
+                      <TableColumn fx:id="carNameColumn" prefWidth="220.0" text="Car name" />
+                      <TableColumn fx:id="amountBetColumn" minWidth="5.0" prefWidth="200.0" text="Amount of bet" />
+                    </columns>
+                  </TableView>
+               </children>
+            </HBox>
          </children>
       </VBox>
    </children>

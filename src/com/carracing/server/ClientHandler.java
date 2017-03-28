@@ -99,7 +99,7 @@ public class ClientHandler implements AutoCloseable {
 			case MAKE_BET: makeBet(command.getData()); break;
 			case LOGIN: login(command.getData()); break;
 			case SIGNUP: signup(command.getData()); break;
-			case OBTAIN_CAR_REPORTS: obtainCarReports(); break;
+			case OBTAIN_CAR_REPORTS: obtainCarReports(command.getData()); break;
 			case OBTAIN_GAMBLER_REPORTS: obtainGamblerReports(); break;
 			}
 		}
@@ -110,8 +110,8 @@ public class ClientHandler implements AutoCloseable {
 			writeHandler.send(command);
 		}
 
-		private void obtainCarReports() {
-			List<CarReport> carReports = raceService.obtainCarReports();
+		private void obtainCarReports(CarReport.Query query) {
+			List<CarReport> carReports = raceService.obtainCarReports(query);
 			Command command = new Command(Action.ADD_CAR_REPORTS, carReports);
 			writeHandler.send(command);
 		}

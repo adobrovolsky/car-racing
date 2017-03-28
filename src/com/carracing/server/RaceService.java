@@ -1,5 +1,7 @@
 package com.carracing.server;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import com.carracing.server.repository.ReportsJdbcRepository;
@@ -12,6 +14,7 @@ import com.carracing.shared.model.Car;
 import com.carracing.shared.model.Race;
 import com.carracing.shared.model.User;
 import com.carracing.shared.model.reports.CarReport;
+import com.carracing.shared.model.reports.CarReport.Query;
 import com.carracing.shared.model.reports.GamblerReport;
 import com.carracing.shared.model.reports.RaceReport;
 
@@ -72,8 +75,15 @@ public class RaceService {
 	}
 
 
-	public List<CarReport> obtainCarReports() {
-		return reportsRepository.selectAllCarReports();
+	public List<CarReport> obtainCarReports(Query query) {
+		if (query.equals(Query.SELECT_ALL)) {
+			return reportsRepository.selectAllCarReports();
+			
+		} else if (query.equals(Query.SELECT_BY_RACE_ID)) {
+			return reportsRepository.selectCarsByRace(query.getParam());
+		}
+		
+		return Collections.emptyList();
 	}
 
 

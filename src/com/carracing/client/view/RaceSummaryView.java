@@ -28,7 +28,7 @@ public class RaceSummaryView extends VBox {
 	@FXML private TableView<User> usersTable;
 	@FXML private StackPane carPreview;
 	@FXML private TableColumn<User, String> userColumn;
-	@FXML private TableColumn<User, Double> winSumColumn;
+	@FXML private TableColumn<User, Double> profitColumn;
 	
 	private final RaceService service = RaceService.getInstance();
 	
@@ -38,7 +38,8 @@ public class RaceSummaryView extends VBox {
 
 		if (service.isLogin()) {
 			com.carracing.shared.model.User currUser = service.getUser();
-			if (summary.getUsers().containsKey(currUser)) {
+			Double profit = summary.getUsers().get(currUser);
+			if (profit != null && profit > 0) {
 				message.setText("You Win!");
 			} else {
 				message.setText("You Lose!");
@@ -60,8 +61,8 @@ public class RaceSummaryView extends VBox {
 		userColumn.setCellValueFactory(data ->
 			new ReadOnlyStringWrapper(data.getValue().fullname));
 	
-		winSumColumn.setCellValueFactory(data ->
-			new ReadOnlyObjectWrapper<Double>(data.getValue().winSum));
+		profitColumn.setCellValueFactory(data ->
+			new ReadOnlyObjectWrapper<Double>(data.getValue().profit));
 	}
 
 	/**
@@ -81,11 +82,11 @@ public class RaceSummaryView extends VBox {
 
 	private static class User {
 		String fullname;
-		double winSum;
+		double profit;
 		
-		public User(String fullname, double winSum) {
+		public User(String fullname, double profit) {
 			this.fullname = fullname;
-			this.winSum = winSum;
+			this.profit = profit;
 		}
 	}
 }

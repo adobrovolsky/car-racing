@@ -36,7 +36,7 @@
       <TableView fx:id="usersTable" prefHeight="181.0" prefWidth="420.0" VBox.vgrow="ALWAYS">
          <columns>
             <TableColumn fx:id="userColumn" maxWidth="-1.0" minWidth="350.0" prefWidth="350.0" text="User" />
-            <TableColumn fx:id="winSumColumn" maxWidth="-1.0" minWidth="150.0" prefWidth="150.0" text="Win sum" />
+            <TableColumn fx:id="profitColumn" maxWidth="-1.0" minWidth="150.0" prefWidth="150.0" text="Profit" />
          </columns>
       </TableView>
    </children>
