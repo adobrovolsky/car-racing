@@ -7,14 +7,14 @@ use carracing;
 
 CREATE TABLE race_summary_user (
   user_id         int(10) NOT NULL, 
-  profit          float NOT NULL, 
+  profit          decimal(20, 3) NOT NULL, 
   race_summary_id int(10) NOT NULL, 
   PRIMARY KEY (user_id, race_summary_id));
 
 CREATE TABLE race_summary (
   race_id       int(10) NOT NULL, 
   winner        int(10) NOT NULL, 
-  system_profit float NOT NULL, 
+  system_profit decimal(20, 3) NOT NULL, 
   total_bets    int(10) NOT NULL,
   amount_bets   int(10) NOT NULL,
   id            int(10) NOT NULL AUTO_INCREMENT, 
@@ -51,7 +51,7 @@ CREATE TABLE car (
   color    char(10), 
   shape    varchar(100), 
   `size`   varchar(100), 
-  distance float, 
+  distance decimal(20, 3), 
   race_id   int(10) NOT NULL, 
   PRIMARY KEY (id));
 

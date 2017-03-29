@@ -4,12 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -25,16 +22,27 @@ import com.carracing.shared.model.Car;
 import com.carracing.shared.model.Race;
 import com.carracing.shared.model.RaceSummary;
 
+import javafx.animation.Timeline;
 import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.AmbientLight;
+import javafx.scene.Group;
+import javafx.scene.PerspectiveCamera;
+import javafx.scene.SceneAntialiasing;
+import javafx.scene.SubScene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
+import javafx.scene.paint.Color;
+import javafx.scene.transform.Rotate;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 /**
  * This view displays a race in which five cars participate.
@@ -45,26 +53,26 @@ public class CarRacing extends StackPane implements ActionListener {
 	
 	@FXML private Label carLeader;
 	@FXML private Label timer;
-	@FXML private Pane trackOne;
-	@FXML private Pane trackTwo;
-	@FXML private Pane trackThree;
-	@FXML private Pane trackFour;
-	@FXML private Pane trackFive;
+	@FXML private AnchorPane tracksPane;
 
 	private final RaceService service = RaceService.getInstance();
 	private final ClassLoader loader = Client.class.getClassLoader();
 	private MediaPlayer startPlayer, finishPlayer, racePlayer;
 	private Map<Long, CarView> map = new HashMap<>();
-	private List<Pane> tracks;
 	private File soundsDir;
 	
 	private Timer t = new Timer();
 	private TimeTask timerTask;
 	private boolean started;
+	private Group tracksGroup = new Group();
 
 	public CarRacing() {
 		inflateLayout();
-		tracks = Arrays.asList(trackOne, trackTwo, trackThree, trackFour, trackFive);
+		buildTracks(tracksGroup);
+		tracksGroup.getChildren().add(new AmbientLight());
+		SubScene subScene = new SubScene(tracksGroup, 700, 500, true, SceneAntialiasing.DISABLED);
+		subScene.setCamera(new PerspectiveCamera());
+		tracksPane.getChildren().add(subScene);
 		
 		try {
 			URI dir = loader.getResource("sounds/races").toURI();
@@ -77,6 +85,26 @@ public class CarRacing extends StackPane implements ActionListener {
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private void buildTracks(Group parent) {
+		Canvas canvas = new Canvas(700, 500);
+		GraphicsContext gc = canvas.getGraphicsContext2D();
+
+		for (int i = 0; i < 6; i++) {
+			gc.setStroke(Color.BLUE);
+			gc.setLineWidth(2);
+			gc.strokeLine(0, 100 * i, 800, 100 * i);
+		}
+		
+		for (int i = 1; i <= 5; i++) {
+			gc.setStroke(Color.RED);
+			gc.setLineDashes(10);
+			gc.setLineWidth(1);
+			gc.strokeLine(0, 100 * i - 40, 800, 100 * i - 40);
+		}
+		
+		parent.getChildren().add(canvas);
 	}
 	
 	/**
@@ -123,8 +151,8 @@ public class CarRacing extends StackPane implements ActionListener {
 	 * and play the sound of the end of the race.
 	 */
 	private void handleFinishGame(RaceSummary summary) {
-		map.entrySet().stream().forEach(entry -> {
-			entry.getValue().getTransition().stop();
+		map.forEach((carID, carView) -> {
+			carView.getTransition().stop();
 		});
 		racePlayer.stop();
 		timerTask.cancel();
@@ -149,7 +177,7 @@ public class CarRacing extends StackPane implements ActionListener {
 			else rate = 2 - (oldSpeed / newSpeed);
 			
 			view.getTransition().setRate(rate);
-			carLeader.setText(identifyLeader(cars).toString());
+			carLeader.setText(identifyLeader(cars).toString()); 
 		});
 	}
 	
@@ -160,6 +188,7 @@ public class CarRacing extends StackPane implements ActionListener {
 		
 		return leader.get();
 	}
+	
 	/**
 	 * Creates a {@link CarView} for each car.
 	 * @param race the race that is currently running
@@ -171,21 +200,27 @@ public class CarRacing extends StackPane implements ActionListener {
 		timerTask = new TimeTask();
 		t.schedule(timerTask, 0, 1000);
 		
-		Iterator<Car> cars = race.getCars().iterator();
-
-		tracks.stream().forEach(track -> {
-			if (cars.hasNext()) {
-				Car car = cars.next();
-				CarView carView = new CarView(car);
-				track.getChildren().add(carView);
-				map.put(car.getId(), carView);
-				
-				TranslateTransition transition = carView.getTransition();
-				transition.setFromX(-180);
-				transition.setToX(getWidth());
-				transition.play();
-			}
-		});
+		int yAxix = 50, i = 0;
+		for (Car car : race.getCars()) {
+			CarView carView = new CarView(car);
+			carView.setTranslateX(-50);
+			carView.setTranslateY(yAxix + 100 * i++);
+			carView.setRotate(15);
+			carView.setRotationAxis(Rotate.X_AXIS);
+			
+			tracksGroup.getChildren().add(carView);
+			map.put(car.getId(), carView);
+			
+			TranslateTransition transition = new TranslateTransition();
+			transition.setDuration(Duration.seconds(carView.getDuration()));
+			transition.setToX(800);
+			transition.setNode(carView);
+			transition.setDelay(Duration.ZERO);
+			transition.setCycleCount(Timeline.INDEFINITE);
+			carView.setTransition(transition);
+			transition.play();
+		}
+		
 		playSound(race.getSoundID());
 		Car leader = identifyLeader(race.getCars());
 		carLeader.setText(leader.toString());

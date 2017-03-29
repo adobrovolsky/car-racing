@@ -18,6 +18,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.SubScene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
@@ -104,8 +105,8 @@ public class CarInfoView extends TitledPane implements ActionListener {
 		shapeValue.setText(car.getShape().toString());
 		sizeValue.setText(car.getSize().toString());
 		typeValue.setText(car.getType().toString());
-		CarView carView = new CarView(car);
-		carPreview.getChildren().add(carView);
+		SubScene carPreviewSubScene = CarView.asSubScene(car);
+		carPreview.getChildren().add(carPreviewSubScene);
 	}
 	
 	/**

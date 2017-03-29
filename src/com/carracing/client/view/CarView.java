@@ -1,48 +1,150 @@
 package com.carracing.client.view;
 
 import com.carracing.shared.model.Car;
-import com.carracing.shared.model.Race;
 import com.carracing.shared.model.Car.CarSize;
 
+import javafx.animation.RotateTransition;
 import javafx.animation.Timeline;
 import javafx.animation.TranslateTransition;
-import javafx.scene.layout.Pane;
+import javafx.scene.Group;
+import javafx.scene.PerspectiveCamera;
+import javafx.scene.SubScene;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.CubicCurveTo;
-import javafx.scene.shape.Ellipse;
-import javafx.scene.shape.LineTo;
-import javafx.scene.shape.MoveTo;
-import javafx.scene.shape.Path;
+import javafx.scene.paint.PhongMaterial;
+import javafx.scene.shape.Box;
+import javafx.scene.shape.Cylinder;
+import javafx.scene.shape.DrawMode;
+import javafx.scene.shape.Sphere;
+import javafx.scene.transform.Rotate;
 import javafx.util.Duration;
 
-public class CarView extends Pane {
+public class CarView extends Group {
 	
 	private Car car;
-	private Path carPath;
+	private int duration;
 	private TranslateTransition transition;
 
 	public CarView(Car car) {
 		this.car = car;
 		
-		createCarFrame();
-		createWheels();
+		buildCar();
 		setSize(car.getSize());
-		setColor(car.getColor());
+		duration = calcDuration();
+	}
+	
+	public static SubScene asSubScene(Car car) {
+		CarView carView = new CarView(car);
+		Rotate rotateY = new Rotate(40, Rotate.Y_AXIS);
+		carView.setTranslateX(100);
+		carView.setTranslateY(50);
+		carView.getTransforms().addAll(rotateY);
 		
-		int duration = calcDuration(car);
-		
-		transition = new TranslateTransition();
-		transition.setDuration(Duration.seconds(duration));
+		RotateTransition transition = new RotateTransition(Duration.seconds(5), carView);
+		transition.setByAngle(360);
+		transition.setAxis(Rotate.Y_AXIS);
 		transition.setCycleCount(Timeline.INDEFINITE);
-		transition.setNode(this);
+		transition.play();
+		
+		SubScene scene = new SubScene(carView, 200, 150, true, null);
+		scene.setCamera(new PerspectiveCamera());
+		return scene;
 	}
 	
-	public TranslateTransition getTransition() {
-		return transition;
+	public Group buildCar() {
+		Group carGroup = new Group();
+		
+		buildFrame(carGroup);
+		buildWindshield(carGroup);
+		buildWheels(carGroup);
+		buildHeadlights(carGroup);
+		buildTaillights(carGroup);
+		
+		return carGroup;
 	}
 	
+	private void buildFrame(Group parent) {
+		Box carFrame = new Box(200, 50, 100);
+		carFrame.setDrawMode(DrawMode.FILL);
+		carFrame.setMaterial(new PhongMaterial(Color.valueOf(car.getColor())));
+		
+		getChildren().add(carFrame);
+	}
 
-	private int calcDuration(Car car) {
+	private void buildWindshield(Group parent) {
+		Box windshield = new Box(5, 50, 100);
+		windshield.setMaterial(new PhongMaterial(Color.GREY));
+		windshield.setTranslateY(-46);
+		windshield.setTranslateX(50);
+		windshield.setRotate(-30);
+		
+		getChildren().add(windshield);
+	}
+	
+	private void buildWheels(Group parent) {
+		PhongMaterial mat = new PhongMaterial(Color.GREY);
+		
+		Cylinder wheel1 = new Cylinder(20, 10);
+		wheel1.setTranslateX(-50);
+		wheel1.setTranslateZ(-50);
+		wheel1.setTranslateY(25);
+		wheel1.setRotate(90);
+		wheel1.setRotationAxis(Rotate.X_AXIS);
+		wheel1.setMaterial(mat);
+		
+		Cylinder wheel2 = new Cylinder(20, 20);
+		wheel2.setTranslateX(50);
+		wheel2.setTranslateZ(-50);
+		wheel2.setTranslateY(25);
+		wheel2.setRotate(90);
+		wheel2.setRotationAxis(Rotate.X_AXIS);
+		wheel2.setMaterial(mat);
+		
+		Cylinder wheel3 = new Cylinder(20, 20);
+		wheel3.setTranslateX(-50);
+		wheel3.setTranslateZ(50);
+		wheel3.setTranslateY(25);
+		wheel3.setRotate(90);
+		wheel3.setRotationAxis(Rotate.X_AXIS);
+		wheel3.setMaterial(mat);
+		
+		Cylinder wheel4 = new Cylinder(20, 20);
+		wheel4.setTranslateX(50);
+		wheel4.setTranslateZ(50);
+		wheel4.setTranslateY(25);
+		wheel4.setRotate(90);
+		wheel4.setRotationAxis(Rotate.X_AXIS);
+		wheel4.setMaterial(mat);
+		
+		getChildren().addAll(wheel1, wheel2, wheel3, wheel4);
+	}
+	
+	private void buildHeadlights(Group parent) {
+		Sphere headLightLeft = new Sphere(10);
+		headLightLeft.setTranslateX(98);
+		headLightLeft.setTranslateZ(-30);
+		
+		Sphere headLightRight = new Sphere(10);
+		headLightRight.setTranslateX(98);
+		headLightRight.setTranslateZ(30);
+		
+		getChildren().addAll(headLightLeft, headLightRight);
+	}
+	
+	private void buildTaillights(Group parent) {
+		Box tailLightLeft = new Box(10, 10, 25);
+		tailLightLeft.setTranslateX(-98);
+		tailLightLeft.setTranslateZ(30);
+		tailLightLeft.setMaterial(new PhongMaterial(Color.RED));
+		
+		Box tailLightRight = new Box(10, 10, 25);
+		tailLightRight.setTranslateX(-98);
+		tailLightRight.setTranslateZ(-30);
+		tailLightRight.setMaterial(new PhongMaterial(Color.RED));
+		
+		getChildren().addAll(tailLightLeft, tailLightRight);
+	}	
+
+	private int calcDuration() {
 		int cycle = 10;
 		int maxDistance = cycle * Car.MAX_SPEED;
 		int speed = car.getSpeed();
@@ -53,98 +155,29 @@ public class CarView extends Pane {
 		
 		return duration;
 	}
-	
-	private void createCarFrame() {
-		carPath = new Path();
-		
-		MoveTo start = new MoveTo();
-		start.setX(50);
-		start.setY(60);
-		
-		LineTo line1 = new LineTo();
-		line1.setX(34);
-		line1.setY(60);
-		
-		LineTo line2 = new LineTo();
-		line2.setX(34);
-		line2.setY(60);
-		
-		CubicCurveTo cubic1 = new CubicCurveTo();
-		cubic1.setX(54);
-		cubic1.setY(34);
-		cubic1.setControlX1(30);
-		cubic1.setControlY1(37);
-		cubic1.setControlX2(36);
-		cubic1.setControlY2(32);
-		
-		CubicCurveTo cubic2 = new CubicCurveTo();
-		cubic2.setX(136);
-		cubic2.setY(34);
-		cubic2.setControlX1(66);
-		cubic2.setControlY1(2);
-		cubic2.setControlX2(124);
-		cubic2.setControlY2(2);
-		
-		LineTo line3 = new LineTo();
-		line3.setX(148);
-		line3.setY(34);
-		
-		CubicCurveTo cubic3 = new CubicCurveTo();
-		cubic3.setX(178);
-		cubic3.setY(60);
-		cubic3.setControlX1(162);
-		cubic3.setControlY1(36);
-		cubic3.setControlX2(178);
-		cubic3.setControlY2(46);
-		
-		LineTo line4 = new LineTo();
-		line4.setX(50);
-		line4.setY(60);
-		
-		carPath.getElements()
-			.addAll(start, line1, line2, cubic1, cubic2, line3, cubic3, line4);
-		getChildren().add(carPath);
-	}
-
-	private void setColor(String color) {
-		carPath.setFill(Color.valueOf(color));
-	}
 
 	private void setSize(CarSize size) {
-		double scale = 0.9;
-		if (size == CarSize.NORMAL) scale = 0.8;
-		if (size == CarSize.MINI) scale = 0.7;
+		double scale = 0.50;
+		if (size == CarSize.NORMAL) scale = 0.45;
+		if (size == CarSize.MINI) scale = 0.40;
 		setScaleX(scale);
 		setScaleY(scale);
-	}
-
-	private void createWheels() {
-		Ellipse tire1 = new Ellipse(66, 60, 30/2, 30/2);
-		tire1.setFill(Color.BLACK);
-		tire1.setStrokeWidth(10);
-		
-		Ellipse rim1 = new Ellipse(66, 60, 25/2, 25/2);
-		rim1.setFill(Color.SILVER);
-		
-		Ellipse hub1 = new Ellipse(66, 60, 8/2, 8/2);
-		hub1.setFill(Color.BLACK);
-		
-		
-		
-		Ellipse tire2 = new Ellipse(132, 60, 30/2, 30/2);
-		tire2.setFill(Color.BLACK);
-		tire2.setStrokeWidth(10);
-		
-		Ellipse rim2 = new Ellipse(132, 60, 25/2, 25/2);
-		rim2.setFill(Color.SILVER);
-		
-		Ellipse hub2 = new Ellipse(132, 60, 8/2, 8/2);
-		hub2.setFill(Color.BLACK);
-		
-		getChildren().addAll(tire1, rim1, hub1, tire2, rim2, hub2);
+		setScaleZ(scale);
 	}
 
 	public Car getCar() {
 		return car;
+	}
+	
+	public int getDuration() {
+		return duration;
+	}
+
+	public void setTransition(TranslateTransition transition) {
+		this.transition = transition;
+	}
+	
+	public TranslateTransition getTransition() {
+		return transition;
 	}
 }

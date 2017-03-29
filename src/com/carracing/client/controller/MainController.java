@@ -108,6 +108,7 @@ public class MainController implements ActionListener {
 	
 	private void showRaceWindow(CarRacing carRacing) {
 		Stage stage = createStage(carRacing, CarRacing.TITLE);
+		stage.setResizable(false);
 		stage.setOnCloseRequest(e -> {
 			windowQueue.remove(stage);
 			carRacing.close();
@@ -145,6 +146,7 @@ public class MainController implements ActionListener {
 			CarRacing carRacing = new CarRacing();
 			stage = createStage(carRacing, race.toString());
 			stage.setOnCloseRequest(e -> carRacing.close());
+			stage.setResizable(false);
 			stage.show();
 			carRacing.startRace(race);
 		}

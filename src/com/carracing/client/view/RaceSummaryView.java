@@ -48,7 +48,7 @@ public class RaceSummaryView extends VBox {
 		
 		List<User> users = convertRaceSummaryToUser(summary);
 		usersTable.setItems(FXCollections.observableArrayList(users));
-		carPreview.getChildren().add(new CarView(summary.getWinner()));
+		carPreview.getChildren().add(CarView.asSubScene(summary.getWinner()));
 	}
 	
 	private List<User> convertRaceSummaryToUser(RaceSummary summary) {
