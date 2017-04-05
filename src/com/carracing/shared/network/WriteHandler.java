@@ -35,6 +35,7 @@ public class WriteHandler implements Runnable, AutoCloseable {
 
 	@Override public void run() {
 		LOGGER.info("WriteHandler started");
+		Thread.currentThread().setName("WriteHandler");
 		
 		while (!Thread.interrupted()) {
 			try {

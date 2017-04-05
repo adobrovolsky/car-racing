@@ -46,7 +46,7 @@ public class Server {
 			listening = true;
 			while(listening) {
 				Socket clientSocket = serverSocket.accept();
-				String hostAddress = clientSocket.getInetAddress().getHostAddress();
+				String hostAddress = clientSocket.getInetAddress().getHostAddress() + clientSocket.getPort();
 				
 				if (!handlersMap.containsKey(hostAddress)) {
 					ClientHandler handler = new ClientHandler(clientSocket);

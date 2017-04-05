@@ -19,8 +19,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.SubScene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
@@ -65,8 +63,9 @@ public class CarInfoView extends TitledPane implements ActionListener {
 			new ReadOnlyStringWrapper(data.getValue().getUser().getFullname()));
 		
 		amount.textProperty().addListener((observable, oldVal, newVal) -> {
-			boolean isNotDigit = newVal.chars().allMatch(v -> !Character.isDigit(v));
-			btnMakeBet.setDisable(isNotDigit);
+			String value = oldVal + newVal;
+			boolean isValidValue = value.matches("^[0-9]+$");
+			btnMakeBet.setDisable(!isValidValue);
 		});
 	}
 	
@@ -125,17 +124,17 @@ public class CarInfoView extends TitledPane implements ActionListener {
 	}
 	
 	@FXML public void handleMakeBetAction(ActionEvent event) {
-		if (!service.isLogin()) {
-			Alert alert = new Alert(AlertType.INFORMATION);
-			alert.setHeaderText(null);
-			alert.setContentText("You need to login to make bets");
-			alert.showAndWait();
-			return;
+		String value = amount.getText().trim();
+		if (!value.isEmpty()) {
+			Integer amountValue = Integer.valueOf(value);
+			Bet bet = new Bet(amountValue, car, service.getUser());
+			service.send(new Command(Action.MAKE_BET, bet));
+			amount.setText("");
 		}
-		Integer amountValue = Integer.valueOf(amount.getText());
-		Bet bet = new Bet(amountValue, car, service.getUser());
-		service.send(new Command(Action.MAKE_BET, bet));
-		amount.setText("");
+	}
+	
+	public boolean isValidBet(int amount) {
+		return amount > 0;
 	}
 
 	@Override public void actionPerformed(Action action, Object data) {

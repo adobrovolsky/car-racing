@@ -7,10 +7,8 @@ import java.util.List;
 import com.carracing.client.RaceService;
 import com.carracing.shared.Command;
 import com.carracing.shared.Command.Action;
-import com.carracing.shared.model.Car;
 import com.carracing.shared.model.reports.CarReport;
 import com.carracing.shared.model.reports.CarReport.Query;
-import com.carracing.shared.model.reports.RaceReport;
 
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -25,8 +23,6 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.paint.Color;
-import javafx.util.Callback;
 
 public class CarReportView extends AnchorPane {
 	
@@ -50,6 +46,11 @@ public class CarReportView extends AnchorPane {
 		List<Query> queries = Arrays.asList(Query.SELECT_ALL, Query.SELECT_BY_RACE_ID);
 		query.setItems(FXCollections.observableArrayList(queries));
 		query.getSelectionModel().selectFirst();
+		query.valueProperty().addListener((obs, oldVal, newVal) -> {
+			if (newVal.equals(CarReport.Query.SELECT_BY_RACE_ID)) {
+				parameter.requestFocus();
+			}
+		});
 		
 		service.addListener(Action.ADD_CAR_REPORTS, this::addCarReports);
 	}
@@ -102,9 +103,16 @@ public class CarReportView extends AnchorPane {
 			service.send(new Command(Action.OBTAIN_CAR_REPORTS, selected));
 			
 		} else if (selected.equals(Query.SELECT_BY_RACE_ID)) {
-			long raceID = Long.valueOf(parameter.getText());
-			selected.<Long>setParam(raceID);
-			service.send(new Command(Action.OBTAIN_CAR_REPORTS, selected));
+			String value = parameter.getText().trim();
+			boolean isValidValue = value.matches("^[0-9]+$");
+			
+			if (isValidValue) {
+				long raceID = Long.valueOf(value);
+				selected.<Long>setParam(raceID);
+				service.send(new Command(Action.OBTAIN_CAR_REPORTS, selected));
+			} else {
+				parameter.requestFocus();
+			}
 		}
 	}
 	

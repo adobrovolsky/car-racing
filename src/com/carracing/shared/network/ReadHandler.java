@@ -34,6 +34,7 @@ public abstract class ReadHandler implements Runnable, AutoCloseable {
 
 	@Override public void run() {
 		LOGGER.info("ReadHandler started");
+		Thread.currentThread().setName("ReadHandler");
 		
 		while (!closed) {
 			try {
@@ -56,7 +57,7 @@ public abstract class ReadHandler implements Runnable, AutoCloseable {
 	protected abstract void processCommand(Command command) throws Exception;
 	
 	@Override public void close() throws Exception {
-		closed = false;
+		closed = true;
 		is.close();
 	}
 }

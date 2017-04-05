@@ -110,8 +110,9 @@ public class RaceOrganizer {
 		@Override
 		public void run() {
 			LOGGER.info("Running race " + race);
-			
+			Thread.currentThread().setName("RaceWorker-" + race.toString());
 			organizer.lock.lock();
+			
 			try {
 				while (!race.isActive()) {
 					organizer.raceNotActive.await();
