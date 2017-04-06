@@ -145,7 +145,7 @@ public class CarView extends Group {
 	}	
 
 	private int calcDuration() {
-		int cycle = 10;
+		int cycle = 17;
 		int maxDistance = cycle * Car.MAX_SPEED;
 		int speed = car.getSpeed();
 		int distance = cycle * speed;
@@ -179,5 +179,9 @@ public class CarView extends Group {
 	
 	public TranslateTransition getTransition() {
 		return transition;
+	}
+
+	public void setCar(Car car) {
+		this.car = car;
 	}
 }

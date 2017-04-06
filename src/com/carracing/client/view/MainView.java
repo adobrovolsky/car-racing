@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.carracing.client.Client;
 import com.carracing.client.FileLocker;
@@ -34,11 +35,12 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 public class MainView extends StackPane implements ActionListener {
 
 	private final RaceService service = RaceService.getInstance();
-	private final Queue<Stage> windowQueue = new LinkedList<>();
+	private final Queue<Stage> windowQueue = new ConcurrentLinkedQueue<>();
 	private final FileLocker fileLocker = new FileLocker("reports.lock");
 
 	@FXML private ListView<Race> racesListView;
@@ -49,6 +51,7 @@ public class MainView extends StackPane implements ActionListener {
 	@FXML private AnchorPane contentPane;
 	
 	private LoginView loginView;
+	private boolean initialized;
 	
 	public MainView() {
 		infliteLayout();
@@ -111,6 +114,7 @@ public class MainView extends StackPane implements ActionListener {
 		}
 		
 		service.send(new Command(Action.OBTAIN_RASES));
+		initialized = true;
 	}
 	
 	private void showReportsWindow() {
@@ -200,11 +204,14 @@ public class MainView extends StackPane implements ActionListener {
 	}
 
 	public void close() {
-		service.removeListener(Action.ADD_RACES, this);
-		service.removeListener(Action.FINISH_GAME, this);
-		service.removeListener(Action.ADD_ACTIVE_RACE, this);
-		
-		windowQueue.stream().forEach(stage -> stage.close());
+		if (initialized) {
+			service.removeListener(Action.ADD_RACES, this);
+			service.removeListener(Action.FINISH_GAME, this);
+			service.removeListener(Action.ADD_ACTIVE_RACE, this);
+			
+			windowQueue.stream().forEach(stage -> 
+				stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST)));
+		}
 		
 		Stage stage = (Stage) getScene().getWindow();
 		stage.close();

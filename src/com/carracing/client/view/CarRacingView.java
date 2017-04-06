@@ -176,6 +176,7 @@ public class CarRacingView extends StackPane implements ActionListener {
 			if (newSpeed > oldSpeed) rate = newSpeed / oldSpeed;
 			else rate = 2 - (oldSpeed / newSpeed);
 			
+			oldCar.setSpeed((int) newSpeed);
 			view.getTransition().setRate(rate);
 			carLeader.setText(identifyLeader(cars).toString()); 
 		});
