@@ -1,16 +1,16 @@
-package com.carracing.client.controller;
+package com.carracing.client.view;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+import com.carracing.client.Client;
+import com.carracing.client.FileLocker;
 import com.carracing.client.RaceService;
 import com.carracing.client.RaceService.ActionListener;
-import com.carracing.client.view.CarInfoView;
-import com.carracing.client.view.CarRacing;
-import com.carracing.client.view.LoginView;
-import com.carracing.client.view.ReportsView;
+import com.carracing.client.WindowCounter;
 import com.carracing.shared.Command;
 import com.carracing.shared.Command.Action;
 import com.carracing.shared.model.Car;
@@ -23,6 +23,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -34,10 +35,11 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-public class MainController implements ActionListener {
+public class MainView extends StackPane implements ActionListener {
 
 	private final RaceService service = RaceService.getInstance();
 	private final Queue<Stage> windowQueue = new LinkedList<>();
+	private final FileLocker fileLocker = new FileLocker("reports.lock");
 
 	@FXML private ListView<Race> racesListView;
 	@FXML private VBox carsContainer;
@@ -48,11 +50,9 @@ public class MainController implements ActionListener {
 	
 	private LoginView loginView;
 	
-	@FXML private void handleAddRace(ActionEvent event) {
-		showRaceWindow(new CarRacing());
-	}
-	
-	public void initialize() {
+	public MainView() {
+		infliteLayout();
+		
 		loginView = new LoginView();
 		mainPane.getChildren().add(loginView);
 		showLoginPane();
@@ -67,6 +67,10 @@ public class MainController implements ActionListener {
 				}
 			});
 		});
+	}
+	
+	@FXML private void handleAddRace(ActionEvent event) {
+		showRaceWindow(new CarRacingView(), true);
 	}
 	
 	private void showLoginPane() {
@@ -98,23 +102,44 @@ public class MainController implements ActionListener {
 			}
 		});
 		
-		showRaceWindow(new CarRacing());
-		showRaceWindow(new CarRacing());
-		showRaceWindow(new CarRacing());
-		createStage(new ReportsView(), ReportsView.TITLE).show();
+		showRaceWindow(new CarRacingView(), true);
+		showRaceWindow(new CarRacingView(), true);
+		showRaceWindow(new CarRacingView(), true);
+		
+		if (fileLocker.lock()) {
+			showReportsWindow();
+		}
 		
 		service.send(new Command(Action.OBTAIN_RASES));
 	}
 	
-	private void showRaceWindow(CarRacing carRacing) {
-		Stage stage = createStage(carRacing, CarRacing.TITLE);
+	private void showReportsWindow() {
+		Stage stage = createStage(new ReportsView(), ReportsView.TITLE);
+		stage.setOnCloseRequest(e -> {
+			fileLocker.unlock();
+			stage.close();
+			WindowCounter.decrement();
+			WindowCounter.executeIfZero(() -> Client.finaly());
+		});
+		stage.show();
+		
+		WindowCounter.incement();
+	}
+	
+	private void showRaceWindow(CarRacingView carRacingView, boolean addToQueue) {
+		Stage stage = createStage(carRacingView, CarRacingView.TITLE);
 		stage.setResizable(false);
 		stage.setOnCloseRequest(e -> {
 			windowQueue.remove(stage);
-			carRacing.close();
+			carRacingView.close();
+			WindowCounter.decrement();
+			WindowCounter.executeIfZero(() -> Client.finaly());
 		});
-		windowQueue.add(stage);
+		if (addToQueue) {
+			windowQueue.add(stage);
+		}
 		stage.show();
+		WindowCounter.incement();
 	}
 		
 	private Stage createStage(Parent parent, String title) {
@@ -140,15 +165,12 @@ public class MainController implements ActionListener {
 		Stage stage = windowQueue.poll();
 		if (stage != null) {
 			stage.setTitle(race.toString());
-			CarRacing carRacing = (CarRacing) stage.getScene().getRoot();
-			carRacing.startRace(race);
+			CarRacingView carRacingView = (CarRacingView) stage.getScene().getRoot();
+			carRacingView.startRace(race);
 		} else {
-			CarRacing carRacing = new CarRacing();
-			stage = createStage(carRacing, race.toString());
-			stage.setOnCloseRequest(e -> carRacing.close());
-			stage.setResizable(false);
-			stage.show();
-			carRacing.startRace(race);
+			CarRacingView carRacingView = new CarRacingView();
+			showRaceWindow(carRacingView, false);
+			carRacingView.startRace(race);
 		}
 	}
 
@@ -160,5 +182,31 @@ public class MainController implements ActionListener {
 		ObservableList<Race> items = FXCollections.observableArrayList(races);
 		racesListView.setItems(items);
 		racesListView.getSelectionModel().selectFirst();
+	}
+	
+	/**
+	 * Creates a view based on the fxml file.
+	 */
+	private void infliteLayout() {
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("main.fxml"));
+		loader.setRoot(this);
+		loader.setController(this); 
+
+		try {
+			loader.load();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public void close() {
+		service.removeListener(Action.ADD_RACES, this);
+		service.removeListener(Action.FINISH_GAME, this);
+		service.removeListener(Action.ADD_ACTIVE_RACE, this);
+		
+		windowQueue.stream().forEach(stage -> stage.close());
+		
+		Stage stage = (Stage) getScene().getWindow();
+		stage.close();
 	}
 }

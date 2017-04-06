@@ -47,7 +47,7 @@ import javafx.util.Duration;
 /**
  * This view displays a race in which five cars participate.
  */
-public class CarRacing extends StackPane implements ActionListener {
+public class CarRacingView extends StackPane implements ActionListener {
 
 	public static final String TITLE = "Race";
 	
@@ -66,7 +66,7 @@ public class CarRacing extends StackPane implements ActionListener {
 	private boolean started;
 	private Group tracksGroup = new Group();
 
-	public CarRacing() {
+	public CarRacingView() {
 		inflateLayout();
 		buildTracks(tracksGroup);
 		tracksGroup.getChildren().add(new AmbientLight());
@@ -230,10 +230,9 @@ public class CarRacing extends StackPane implements ActionListener {
 		if (started) {
 			service.removeListener(Action.CHANGE_SPEED, this);
 			service.removeListener(Action.FINISH_GAME, this);
-			t.cancel();
 			racePlayer.stop();
 		}
-		
+		t.cancel();
 		Stage stage = (Stage) getScene().getWindow();
 		stage.close();
 	}

@@ -15,7 +15,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<StackPane fx:id="mainPane" minHeight="0.0" minWidth="0.0" prefHeight="500.0" prefWidth="800.0" style="-fx-background-color: #fff;" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.carracing.client.controller.MainController">
+<fx:root fx:id="mainPane" minHeight="0.0" minWidth="0.0" prefHeight="500.0" prefWidth="800.0" style="-fx-background-color: #fff;" type="StackPane" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <AnchorPane fx:id="contentPane" StackPane.alignment="TOP_LEFT">
          <children>
@@ -72,4 +72,4 @@
          </children>
       </AnchorPane>
    </children>
-</StackPane>
+</fx:root>

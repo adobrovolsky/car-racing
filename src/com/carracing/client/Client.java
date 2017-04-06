@@ -1,8 +1,11 @@
 package com.carracing.client;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import com.carracing.client.view.MainView;
+
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
@@ -20,20 +23,26 @@ public class Client extends Application {
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("view/main.fxml"));
-		Parent parent = loader.load();
-		Scene scene = new Scene(parent);
+		MainView root = new MainView();
+		Scene scene = new Scene(root);
 		
 		primaryStage.setTitle(TITLE);
 		primaryStage.setScene(scene);
 		primaryStage.setOnCloseRequest(event -> {
-			try {
-				RaceService.getInstance().close();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			WindowCounter.decrement();
+			WindowCounter.executeIfZero(() -> finaly());
+			root.close();
 		});
 		primaryStage.show();
+		WindowCounter.incement();
+	}
+	
+	public static void finaly() {
+		try {
+			RaceService.getInstance().close();
+		} catch (Exception e) {
+			Logger.getAnonymousLogger().log(Level.SEVERE, e.getMessage(), e);
+		}
 	}
 	
 	public static void main(String [] args) {
