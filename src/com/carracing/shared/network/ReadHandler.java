@@ -1,12 +1,16 @@
 package com.carracing.shared.network;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.net.SocketException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.carracing.server.ClientHandler.DisconnectListener;
 import com.carracing.shared.Command;
+import com.carracing.shared.Command.Action;
 
 /**
  * This class allows you to read commands from the input stream that was
@@ -22,14 +26,16 @@ public abstract class ReadHandler implements Runnable, AutoCloseable {
 	private static final Logger LOGGER = Logger.getLogger(ReadHandler.class.getName());
 	
 	protected final ObjectInputStream is;
+	protected DisconnectListener disconnectListener;
 	
 	/**
 	 * This is the flag to stop reading.
 	 */
 	private boolean closed = false;
 	
-	public ReadHandler(InputStream is) throws IOException {
+	public ReadHandler(InputStream is, DisconnectListener listener) throws IOException {
 		this.is = new ObjectInputStream(is);
+		this.disconnectListener = listener;
 	}
 
 	@Override public void run() {
@@ -40,9 +46,13 @@ public abstract class ReadHandler implements Runnable, AutoCloseable {
 			try {
 				Command command = (Command) is.readObject();
 				processCommand(command);
+			} catch (EOFException | SocketException e) {
+				if (disconnectListener != null) {
+					disconnectListener.onDisconnect(null);
+				}
+				break;
 			} catch (Exception e) {
 				LOGGER.log(Level.SEVERE, e.getMessage(), e);
-				break;
 			}
 		}
 		
@@ -59,5 +69,9 @@ public abstract class ReadHandler implements Runnable, AutoCloseable {
 	@Override public void close() throws Exception {
 		closed = true;
 		is.close();
+	}
+
+	public void setDisconnectListener(DisconnectListener listener) {
+		this.disconnectListener = listener;
 	}
 }

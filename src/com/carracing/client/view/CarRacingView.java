@@ -42,6 +42,7 @@ import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
 import javafx.scene.transform.Rotate;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 
 /**
@@ -240,7 +241,10 @@ public class CarRacingView extends StackPane implements ActionListener {
 	
 	private class CloseTask extends TimerTask {
 		@Override public void run() {
-			Platform.runLater(() -> close());
+			Platform.runLater(() -> {
+				Stage stage = (Stage) getScene().getWindow();
+				stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
+			});
 		}
 	}
 	

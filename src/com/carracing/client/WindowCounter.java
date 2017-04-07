@@ -1,9 +1,10 @@
 package com.carracing.client;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Allows you to control the number of windows in the program.
+ */
 public final class WindowCounter {
 	
 	private static final AtomicInteger COUNT = new AtomicInteger(0);
@@ -21,6 +22,6 @@ public final class WindowCounter {
 	}
 	
 	public static void executeIfZero(final Runnable task) {
-		if (getCount() == 0) task.run();
+		if (getCount() <= 0) task.run();
 	}
 }

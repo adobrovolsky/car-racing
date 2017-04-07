@@ -23,6 +23,11 @@ import com.carracing.shared.network.WriteHandler;
  */
 public class ClientHandler implements AutoCloseable {
 	
+	@FunctionalInterface
+	public interface DisconnectListener {
+		void onDisconnect(Socket socket);
+	}
+	
 	private static final Logger LOGGER = Logger.getLogger(ClientHandler.class.getSimpleName());
 	
 	private final Socket socket;
@@ -42,6 +47,8 @@ public class ClientHandler implements AutoCloseable {
 	 * After the ReadHandler detected the command, it gives it to perform this service.
 	 */
 	private final RaceService raceService;
+
+	private DisconnectListener disconnectListener;
 	
 	/**
 	 * Creates two handlers, one will read the data from the input stream 
@@ -54,7 +61,7 @@ public class ClientHandler implements AutoCloseable {
 		try {
 			raceService = RaceService.getInstance();
 			writeHandler = new WriteHandler(socket.getOutputStream());
-			readHandler = new ServerReadHandler(socket.getInputStream());
+			readHandler = new ServerReadHandler(socket.getInputStream(), disconnectListener);
 			Server.runThread(readHandler);
 			Server.runThread(writeHandler);
 		} catch (IOException e) {
@@ -82,8 +89,8 @@ public class ClientHandler implements AutoCloseable {
 	 */
 	class ServerReadHandler extends ReadHandler {
 
-		public ServerReadHandler(InputStream is) throws IOException {
-			super(is);
+		public ServerReadHandler(InputStream is, DisconnectListener listener) throws IOException {
+			super(is, listener);
 		}
 
 		@Override protected void processCommand(Command command) {
@@ -155,5 +162,10 @@ public class ClientHandler implements AutoCloseable {
 		public void makeBet(final Bet bet) {
 			raceService.makeBet(bet);
 		}
+	}
+
+	public void setDisconnectListener(DisconnectListener listener) {
+		this.disconnectListener = listener;
+		this.readHandler.setDisconnectListener(listener);
 	}
 }

@@ -91,6 +91,7 @@ public class RaceService implements AutoCloseable {
 	 * Stops threads and closes an open socket.
 	 */
 	@Override public void close() throws Exception {
+		//send(new Command(Action.DISCONNECT));
 		readHandler.close();
 		writeHandler.close();
 		socket.close();
@@ -141,7 +142,6 @@ public class RaceService implements AutoCloseable {
 		writeHandler.send(command);
 	}
 	
-	
 	/**
 	 * This class reads commands from the server.
 	 * Notifies all listeners about getting command.
@@ -149,7 +149,7 @@ public class RaceService implements AutoCloseable {
 	class ClientReadHandler extends ReadHandler {
 		
 		public ClientReadHandler(InputStream is) throws IOException {
-			super(is);
+			super(is, null);
 		}
 
 		@Override

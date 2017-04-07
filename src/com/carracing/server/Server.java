@@ -50,7 +50,16 @@ public class Server {
 				
 				if (!handlersMap.containsKey(hostAddress)) {
 					ClientHandler handler = new ClientHandler(clientSocket);
+					handler.setDisconnectListener(socket -> {
+						try {
+							handler.close();
+							handlersMap.remove(hostAddress);
+						} catch (Exception e) {
+							LOGGER.log(Level.SEVERE, e.getMessage(), e);
+						}
+					});
 					handlersMap.put(hostAddress, handler);
+					
 					LOGGER.info("Created new handler");
 				}
 			}
