@@ -1,6 +1,7 @@
 package com.carracing.shared.model;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class RaceSummary extends Model<Long> {
@@ -12,7 +13,8 @@ public class RaceSummary extends Model<Long> {
 	private Race race;
 	private int totalBets;
 	private int amountBets;
-	private Map<User, Double> usersProfit = new HashMap<>();
+	private Map<User, Double> userProfits = new HashMap<>();
+	private Map<User, List<Bet>> userBets = new HashMap<>();
 	
 	@Override
 	public String toString() {
@@ -58,15 +60,15 @@ public class RaceSummary extends Model<Long> {
 	}
 
 	public void addUser(User user, double profit) {
-		usersProfit.put(user, profit);
+		userProfits.put(user, profit);
 	}
 	
-	public Map<User, Double> getUsers() {
-		return usersProfit;
+	public Map<User, Double> getUserProfits() {
+		return userProfits;
 	}
 	
-	public void setUsers(Map<User, Double> users) {
-		this.usersProfit = users;
+	public void setUserProfits(Map<User, Double> users) {
+		this.userProfits = users;
 	}
 	
 	public Car getWinner() {
@@ -91,5 +93,13 @@ public class RaceSummary extends Model<Long> {
 	
 	public void setRace(Race race) {
 		this.race = race;
+	}
+
+	public void setUserBets(Map<User, List<Bet>> userBets) {
+		this.userBets = userBets;
+	}
+	
+	public Map<User, List<Bet>> getUserBets() {
+		return userBets;
 	}
 }

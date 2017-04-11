@@ -15,7 +15,7 @@
    <children>
       <VBox minHeight="0.0" minWidth="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
-            <AnchorPane prefHeight="50.0" prefWidth="628.0">
+            <AnchorPane minHeight="-Infinity" prefHeight="50.0" prefWidth="628.0">
                <children>
                   <Label layoutY="6.0" text="Query" />
                   <ComboBox fx:id="query" layoutX="46.0" layoutY="1.0" prefWidth="220.0" />
@@ -23,25 +23,25 @@
                   <Button fx:id="submit" layoutX="399.0" layoutY="1.0" mnemonicParsing="false" onAction="#submitQuery" text="Submit" />
                </children>
             </AnchorPane>
-            <TableView fx:id="gamblersTable" prefHeight="248.0" prefWidth="628.0" VBox.vgrow="ALWAYS">
+            <TableView fx:id="gamblersTable" prefWidth="628.0" VBox.vgrow="ALWAYS">
                <columns>
                   <TableColumn fx:id="nameColumn" prefWidth="243.0" text="Name" />
                   <TableColumn fx:id="totalProfitColumn" prefWidth="179.0" text="Total profit" />
                   <TableColumn fx:id="numberRacesColumn" prefWidth="159.0" text="Number races" />
                </columns>
             </TableView>
-            <HBox minHeight="200.0" prefHeight="100.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+            <HBox VBox.vgrow="ALWAYS">
                <children>
-                  <TableView fx:id="racesTable" prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
+                  <TableView fx:id="racesTable" HBox.hgrow="ALWAYS">
                     <columns>
-                      <TableColumn fx:id="raceNameColumn" prefWidth="143.0" text="Race name" />
-                      <TableColumn fx:id="profitColumn" prefWidth="170.0" text="Profit" />
+                      <TableColumn fx:id="raceNameColumn" prefWidth="144.0" text="Race name" />
+                      <TableColumn fx:id="profitColumn" prefWidth="131.0" text="Profit" />
                     </columns>
                   </TableView>
-                  <TableView fx:id="carsTable" prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
+                  <TableView fx:id="carsTable" HBox.hgrow="ALWAYS">
                     <columns>
-                      <TableColumn fx:id="carNameColumn" prefWidth="220.0" text="Car name" />
-                      <TableColumn fx:id="amountBetColumn" minWidth="5.0" prefWidth="200.0" text="Amount of bet" />
+                      <TableColumn fx:id="carNameColumn" prefWidth="185.0" text="Car name" />
+                      <TableColumn fx:id="amountBetColumn" minWidth="5.0" prefWidth="137.0" text="Amount of bet" />
                     </columns>
                   </TableView>
                </children>

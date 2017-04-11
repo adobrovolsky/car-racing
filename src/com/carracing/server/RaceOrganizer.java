@@ -69,7 +69,7 @@ public class RaceOrganizer {
 	public static final int CHANGE_SPEED_INTERVAL = 30;
 	
 	private final List<Race> races = new ArrayList<>(NUMBER_RACES);
-	private final Map<Race, BetsByCarMap> betsMap = new HashMap<>();
+	private final Map<Race, BetsMap> betsMap = new HashMap<>();
 	private boolean initialized;
 	private Race activeRace;
 	
@@ -107,6 +107,7 @@ public class RaceOrganizer {
 			this.organizer = organizer;
 		}
 
+		@SuppressWarnings("unused")
 		@Override
 		public void run() {
 			LOGGER.info("Running race " + race);
@@ -161,7 +162,7 @@ public class RaceOrganizer {
 	
 	
 	public void sendResultToClients(Race race) {
-		BetsByCarMap bets = betsMap.get(race);
+		BetsMap bets = betsMap.get(race);
 		Car carWinner = identifyCarWinner(race.getCars());
 		Map<User, Double> usersPorfit = calcUsersProfit(carWinner, bets);
 		double systemProfit = culcSystemProfit(bets, carWinner);
@@ -170,9 +171,10 @@ public class RaceOrganizer {
 		summary.setRace(race);
 		summary.setSystemProfit(systemProfit);
 		summary.setWinner(carWinner);
-		summary.setUsers(usersPorfit);
+		summary.setUserProfits(usersPorfit);
 		summary.setTotalBets(bets.getCountBets());
 		summary.setAmountBets(bets.getSumBets());
+		summary.setUserBets(bets.getUserMap());
 		
 		RaceReport report = new RaceReport();
 		report.setCarName(carWinner.toString());
@@ -194,7 +196,7 @@ public class RaceOrganizer {
 	 * @param bets all bets on this race
 	 * @param winner car winning the race
 	 */
-	private double culcSystemProfit(BetsByCarMap bets, Car winner) {
+	private double culcSystemProfit(BetsMap bets, Car winner) {
 		double sumBets = bets.getSumBets();
 		if (bets.forCar(winner).isEmpty()) {
 			return sumBets;
@@ -220,14 +222,14 @@ public class RaceOrganizer {
 	 * Finds all users who made bets on the winning car
 	 * @return users with their winnings
 	 */
-	private Map<User, Double> calcUsersProfit(Car carWinner, BetsByCarMap map) {
+	private Map<User, Double> calcUsersProfit(Car carWinner, BetsMap map) {
 		int totalAmountBets = map.getSumBets();
 		List<Bet> betsForCarWinner = map.forCar(carWinner);
 		Map<User, Double> usersProfit = new HashMap<>();
 		
 		Map<User, Double> profitForWinners = caclProfitForWinners(betsForCarWinner, totalAmountBets);
 		
-		map.forEach((car, bets) -> {
+		map.forEachCar((car, bets) -> {
 			if (!car.equals(carWinner)) {
 				bets.forEach(bet -> {
 					if (!profitForWinners.containsKey(bet.getUser())) {
@@ -278,7 +280,7 @@ public class RaceOrganizer {
 		
 		for (Race race : races) {
 			if (race.isReady()) {
-				BetsByCarMap bets = betsMap.get(race);
+				BetsMap bets = betsMap.get(race);
 				int betsSum = bets.getSumBets();
 				if (betsSum > highestBetsSum) {
 					highestBetsSum = betsSum;
@@ -319,7 +321,7 @@ public class RaceOrganizer {
 	private void loadBets() {
 		int count = 0;
 		for (Race race : races) {
-			BetsByCarMap betMap = new BetsByCarMap();
+			BetsMap betMap = new BetsMap();
 			for (Car car : race.getCars()) {
 				List<Bet> bets = betRepo.query(new SelectBetsByCar(car));
 				betMap.addAll(bets);
@@ -360,9 +362,9 @@ public class RaceOrganizer {
 		}
 
 		Race race = findRaceByCar(bet.getCar());
-		BetsByCarMap map = betsMap.get(race);
+		BetsMap map = betsMap.get(race);
 		if (map == null) {
-			map = new BetsByCarMap();
+			map = new BetsMap();
 			betsMap.put(race, map);
 		}
 		map.add(bet);
@@ -391,7 +393,7 @@ public class RaceOrganizer {
 	public List<Bet> getBetsByCar(final Car car) {
 		requireInitialize();
 		Race race = findRaceByCar(car);
-		BetsByCarMap bets = betsMap.get(race);
+		BetsMap bets = betsMap.get(race);
 		if (bets == null) {
 			return Collections.emptyList();
 		}
@@ -413,19 +415,28 @@ public class RaceOrganizer {
 		}
 	}
 	
-	private static class BetsByCarMap {
+	private static class BetsMap {
 		
-		private final Map<Car, List<Bet>> map = new HashMap<>();
+		private final Map<Car, List<Bet>> carMap = new HashMap<>();
+		private final Map<User, List<Bet>> userMap =  new HashMap<>();
 		private int countBets;
 		private int sumBets;
 		
 		public void add(final Bet bet) {
-			List<Bet> bets = map.get(bet.getCar());
+			List<Bet> bets = carMap.get(bet.getCar());
 			if (bets == null) {
 				bets = new ArrayList<>();
-				map.put(bet.getCar(), bets);
+				carMap.put(bet.getCar(), bets);
 			}
 			bets.add(bet);
+			
+			bets = userMap.get(bet.getUser());
+			if (bets == null) {
+				bets = new ArrayList<>();
+				userMap.put(bet.getUser(), bets);
+			}
+			bets.add(bet);
+			
 			countBets++;
 			sumBets += bet.getAmount();
 		}
@@ -435,15 +446,23 @@ public class RaceOrganizer {
 		}
 		
 		public List<Bet> forCar(final Car car) {
-			List<Bet> list = map.get(car);
-			if (list == null) {
-				return Collections.emptyList();
-			}
+			List<Bet> list = carMap.get(car);
+			if (list == null) return Collections.emptyList();
 			return list;
 		}
 		
-		public void forEach(BiConsumer<? super Car, List<Bet>> consumer) {
-			map.forEach(consumer);
+		public List<Bet> forUser(final User user) {
+			List<Bet> list = userMap.get(user);
+			if (list == null) return Collections.emptyList();
+			return list;
+		}
+		
+		public void forEachCar(BiConsumer<? super Car, List<Bet>> consumer) {
+			carMap.forEach(consumer);
+		}
+		
+		public void forEachUser(BiConsumer<? super User, List<Bet>> consumer) {
+			userMap.forEach(consumer);
 		}
 		
 		public int getSumBets() {
@@ -451,11 +470,15 @@ public class RaceOrganizer {
 		}
 
 		public int size() {
-			return map.size();
+			return carMap.size();
 		}
 		
 		public int getCountBets() {
 			return countBets;
+		}
+		
+		public Map<User, List<Bet>> getUserMap() {
+			return userMap;
 		}
 	}
 }

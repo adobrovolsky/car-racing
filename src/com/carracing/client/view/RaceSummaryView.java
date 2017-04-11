@@ -38,7 +38,7 @@ public class RaceSummaryView extends VBox {
 
 		if (service.isLogin()) {
 			com.carracing.shared.model.User currUser = service.getUser();
-			Double profit = summary.getUsers().get(currUser);
+			Double profit = summary.getUserProfits().get(currUser);
 			if (profit != null && profit > 0) {
 				message.setText("You Win!");
 			} else {
@@ -52,7 +52,7 @@ public class RaceSummaryView extends VBox {
 	}
 	
 	private List<User> convertRaceSummaryToUser(RaceSummary summary) {
-		return summary.getUsers().entrySet().stream()
+		return summary.getUserProfits().entrySet().stream()
 				.map(entry -> new User(entry.getKey().getFullname(), entry.getValue()))
 				.collect(Collectors.toList());
 	}

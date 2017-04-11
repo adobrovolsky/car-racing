@@ -40,7 +40,7 @@ public class RaceSummaryJdbcRepository implements Repository<RaceSummary>{
 			long generatedID = DBUtil.executeUpdate(sqlQuery);
 			entity.setId(generatedID);
 			
-			for(Entry<User, Double> entry : entity.getUsers().entrySet()) {
+			for(Entry<User, Double> entry : entity.getUserProfits().entrySet()) {
 				long userID = entry.getKey().getId();
 				double userProfit = NumberUtil.round(entry.getValue(), 3);
 				

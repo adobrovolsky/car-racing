@@ -91,7 +91,15 @@ public class Race extends Model<Long> {
 	
 	public void randomSpeed() {
 		getCars().stream().forEach(car -> {
-			car.setSpeed(random.nextInt(40) + 60);
+			int oldSpeed = car.getSpeed();
+			int newSpeed;
+			int x;
+			
+			do {
+				newSpeed = random.nextInt(40) + 60;
+				x = Math.abs(newSpeed - oldSpeed);
+			} while(x < 15);
+			car.setSpeed(newSpeed);
 		});
 	}
 	

@@ -2,6 +2,7 @@ package com.carracing.server.repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.carracing.server.util.DBUtil;
+import com.carracing.shared.model.User;
 import com.carracing.shared.model.reports.CarReport;
 import com.carracing.shared.model.reports.GamblerReport;
 import com.carracing.shared.model.reports.GamblerReport.Car;
@@ -52,7 +54,7 @@ public class ReportsJdbcRepository {
 	
 	public List<GamblerReport> selectAllGamblerReports() {
 		final String selectGamblers = 
-				"SELECT u.id, u.fullname, SUM(rsu.profit) AS profit, COUNT(rsu.race_summary_id) AS 'number_races' " +
+				"SELECT u.id, u.fullname, u.login, SUM(rsu.profit) AS profit, COUNT(rsu.race_summary_id) AS 'number_races' " +
 				"FROM race_summary_user rsu, user u " + 
 				"WHERE u.id = rsu.user_id " +
 				"GROUP BY rsu.user_id " +
@@ -78,16 +80,20 @@ public class ReportsJdbcRepository {
 			
 			while (from.next()) {
 				GamblerReport report = new GamblerReport();
-				report.setName(from.getString("fullname"));
 				report.setProfit(from.getDouble("profit"));
 				report.setNumberRaces(from.getInt("number_races"));
-				report.setId(from.getLong("id"));
 				
+				User user = new User();
+				user.setId(from.getLong("id"));
+				user.setFullname(from.getString("fullname"));
+				user.setLogin(from.getString("login"));
+				
+				report.setUser(user);
 				reports.add(report);
 			}
 			
 			reports.stream().forEach(report -> {
-				List<Race> races = query(new SelectRacesByUserID(report.getId()).toSqlQuery(), resultSet -> {
+				List<Race> races = query(new SelectRacesByUserID(report.getUser().getId()).toSqlQuery(), resultSet -> {
 					final List<Race> list = new ArrayList<>();
 					
 					while (resultSet.next()) {
@@ -95,6 +101,9 @@ public class ReportsJdbcRepository {
 						race.setName(resultSet.getString("race_name"));
 						race.setProfit(resultSet.getDouble("profit"));
 						race.setId(resultSet.getLong("id"));
+						String started = resultSet.getString("started");
+						race.setDate(started.equals("null") ? null : started);
+						
 						list.add(race);
 					}
 					return list;
@@ -104,7 +113,7 @@ public class ReportsJdbcRepository {
 			
 			reports.stream().forEach(report -> {  
 				report.getRaces().stream().forEach(race -> {
-					List<Car> cars = query(new SelectCarsByUserID(report.getId(), race.getId()).toSqlQuery(), resultSet -> {
+					List<Car> cars = query(new SelectCarsByUserID(report.getUser().getId(), race.getId()).toSqlQuery(), resultSet -> {
 						List<Car> list = new ArrayList<>();
 						
 						while(resultSet.next()) {
@@ -130,7 +139,7 @@ public class ReportsJdbcRepository {
 		}
 
 		@Override public String toSqlQuery() {
-			return  " SELECT r.id, CONCAT(r.name, ' ', r.id) AS 'race_name', rsu.profit " +
+			return  " SELECT r.id, CONCAT(r.name, ' ', r.id) AS 'race_name', r.started, rsu.profit " +
 					" FROM race_summary_user rsu, race r, race_summary rs " + 
 					" WHERE rsu.race_summary_id = rs.id AND rs.race_id = r.id AND rsu.user_id = " +  id +
 					" ORDER BY rsu.profit DESC";
@@ -187,7 +196,8 @@ public class ReportsJdbcRepository {
 				report.setCarName(from.getString("car_name"));
 				report.setRaceName(from.getString("race_name"));
 				report.setSystemProfit(from.getDouble("system_profit"));
-				report.setDate(from.getString("started"));
+				String started = from.getString("started");
+				report.setDate(started.equals("null") ? null : started);
 				
 				reports.add(report);
 			}

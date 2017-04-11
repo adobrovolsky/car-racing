@@ -65,8 +65,6 @@ public class Command implements Serializable {
 		OBTAIN_CAR_REPORTS,			ADD_CAR_REPORTS, 
 		OBTAIN_GAMBLER_REPORTS,		ADD_GAMBLER_REPORTS, 
 		
-		DISCONNECT,
-		STOP,
 		CLOSE_BLOCKING_QUEUE, 
 	}
 }

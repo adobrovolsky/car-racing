@@ -10,6 +10,7 @@ import com.carracing.shared.Command.Action;
 import com.carracing.shared.model.reports.CarReport;
 import com.carracing.shared.model.reports.CarReport.Query;
 
+import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
@@ -45,19 +46,25 @@ public class CarReportView extends AnchorPane {
 		
 		List<Query> queries = Arrays.asList(Query.SELECT_ALL, Query.SELECT_BY_RACE_ID);
 		query.setItems(FXCollections.observableArrayList(queries));
-		query.getSelectionModel().selectFirst();
 		query.valueProperty().addListener((obs, oldVal, newVal) -> {
 			if (newVal.equals(CarReport.Query.SELECT_BY_RACE_ID)) {
+				parameter.setDisable(false);
 				parameter.requestFocus();
+			} else if (newVal.equals(CarReport.Query.SELECT_ALL)) {
+				parameter.setDisable(true);
 			}
 		});
+		query.getSelectionModel().selectFirst();
 		
 		service.addListener(Action.ADD_CAR_REPORTS, this::addCarReports);
 	}
 	
+	@SuppressWarnings("unchecked")
 	private void addCarReports(Action a, Object data) {
-		List<CarReport> cars = (List<CarReport>) data;
-		carsTable.setItems(FXCollections.observableArrayList(cars));
+		Platform.runLater(() -> {
+			List<CarReport> cars = (List<CarReport>) data;
+			carsTable.setItems(FXCollections.observableArrayList(cars));
+		});
 	}
 	
 	private void configureTableColumns() {

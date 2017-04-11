@@ -62,7 +62,6 @@ public class RaceReport implements Serializable {
 		this.systemProfit = systemProfit;
 	}
 
-
 	public String getRaceName() {
 		return raceName;
 	}
