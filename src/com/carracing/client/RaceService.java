@@ -9,12 +9,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.carracing.shared.Command;
 import com.carracing.shared.Command.Action;
-import com.carracing.shared.model.User;
 import com.carracing.shared.network.ReadHandler;
 import com.carracing.shared.network.WriteHandler;
 
@@ -40,20 +40,19 @@ public class RaceService implements AutoCloseable {
 	private static final String HOST = "localhost";
 	private static final int PORT = 8024;
 	
-	/**
-	 * Authorized user.
-	 */
-	private User user;
 	private static volatile RaceService instance;
 	private WriteHandler writeHandler;
 	private ReadHandler readHandler;
 	private Socket socket;
 	private ExecutorService executor = Executors.newFixedThreadPool(2);
+	private AtomicInteger requestID = new AtomicInteger(0);
 	
 	/**
 	 * Listeners the server events which grouping by action.
 	 */
 	private Map<Action, Set<ActionListener>> listeners = new HashMap<>();
+	
+	private Map<Integer, ActionListener> sessionListeners = new HashMap<>(); 
 	
 	private RaceService() {
 		try { 
@@ -91,28 +90,10 @@ public class RaceService implements AutoCloseable {
 	 * Stops threads and closes an open socket.
 	 */
 	@Override public void close() throws Exception {
-		//send(new Command(Action.DISCONNECT));
 		readHandler.close();
 		writeHandler.close();
 		socket.close();
 		executor.shutdownNow();
-	}
-	
-	public void setUser(User user) {
-		this.user = user;
-	}
-	
-	public User getUser() {
-		return user;
-	}
-	
-	/**
-	 * A simple way to authorize users.
-	 * 
-	 * @return true if the user is not null, otherwise false. 
-	 */
-	public boolean isLogin() {
-		return user != null;
 	}
 	
 	/**
@@ -143,6 +124,21 @@ public class RaceService implements AutoCloseable {
 	}
 	
 	/**
+	 * Allows you to communicate with the server in the request-response mode. 
+	 * This means that only one listener will receive a response. Since the work with the server
+	 * is asynchronously, we add a unique identifier to the command.
+	 * 
+	 * @param command describes the action which to be performed on the server.
+	 * @param listener receives a response from the server.
+	 */
+	public void send(Command command, ActionListener listener) {
+		int id = requestID.getAndIncrement();
+		command.setMeta(id);
+		sessionListeners.put(id, listener);
+		writeHandler.send(command);
+	}
+	
+	/**
 	 * This class reads commands from the server.
 	 * Notifies all listeners about getting command.
 	 */
@@ -155,7 +151,14 @@ public class RaceService implements AutoCloseable {
 		@Override
 		protected void processCommand(Command command) throws Exception {
 			LOGGER.info("Recived command - " + command);
-			notifyListeners(command);
+			
+			ActionListener listener = sessionListeners.get(command.getMetadata());
+			if (listener != null) {
+				listener.actionPerformed(command.getAction(), command.getData());
+				sessionListeners.remove(listener);
+			} else {
+				notifyListeners(command); 
+			}
 		}
 		
 		private void notifyListeners(Command command) {

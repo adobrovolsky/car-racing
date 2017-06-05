@@ -10,7 +10,6 @@ import java.util.logging.Logger;
 
 import com.carracing.server.ClientHandler.DisconnectListener;
 import com.carracing.shared.Command;
-import com.carracing.shared.Command.Action;
 
 /**
  * This class allows you to read commands from the input stream that was

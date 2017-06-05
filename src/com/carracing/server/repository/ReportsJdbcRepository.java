@@ -102,7 +102,7 @@ public class ReportsJdbcRepository {
 						race.setProfit(resultSet.getDouble("profit"));
 						race.setId(resultSet.getLong("id"));
 						String started = resultSet.getString("started");
-						race.setDate(started.equals("null") ? null : started);
+						race.setDate(started.equals("null") ? null : LocalDateTime.parse(started));
 						
 						list.add(race);
 					}
@@ -197,7 +197,7 @@ public class ReportsJdbcRepository {
 				report.setRaceName(from.getString("race_name"));
 				report.setSystemProfit(from.getDouble("system_profit"));
 				String started = from.getString("started");
-				report.setDate(started.equals("null") ? null : started);
+				report.setDate(started.equals("null") ? null : LocalDateTime.parse(started));
 				
 				reports.add(report);
 			}

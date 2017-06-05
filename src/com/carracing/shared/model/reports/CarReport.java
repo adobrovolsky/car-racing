@@ -21,7 +21,7 @@ public class CarReport implements Serializable {
 		
 		public <T> void setParam(T param) {
 			this.param = param;
-		}
+		}	
 		
 		@SuppressWarnings("unchecked")
 		public <T> T getParam() {

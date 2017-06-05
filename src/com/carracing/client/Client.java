@@ -18,15 +18,13 @@ import javafx.stage.Stage;
  * @version 1.0
  */
 public class Client extends Application {
-	
-	private static final String TITLE = "Car racing"; 
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		MainView root = new MainView();
 		Scene scene = new Scene(root);
 		
-		primaryStage.setTitle(TITLE);
+		primaryStage.setTitle(MainView.TITLE);
 		primaryStage.setScene(scene);
 		primaryStage.setOnCloseRequest(event -> {
 			WindowCounter.decrement();

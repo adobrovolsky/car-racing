@@ -9,6 +9,7 @@ import com.carracing.shared.Command;
 import com.carracing.shared.Command.Action;
 import com.carracing.shared.model.Bet;
 import com.carracing.shared.model.Car;
+import com.carracing.shared.model.User;
 
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -46,14 +47,22 @@ public class CarInfoView extends TitledPane implements ActionListener {
 	@FXML private TableColumn<Bet, String> userColumn;
 		
 	private Car car;
+	private User authorizedUser;
 	private final RaceService service = RaceService.getInstance();
 	private final ObservableList<Bet> observaleBets = FXCollections.observableArrayList();
 	
-	public CarInfoView(Car car) {
+	public CarInfoView() {
+		initialize();
+	}
+	
+	public CarInfoView(User user) {
+		this.authorizedUser = user;
+		initialize();
+	}
+	
+	private void initialize() {
 		inflateLayout();
-		setCar(car);
-		
-		service.addListener(Action.ADD_BETS, this);
+		betsTable.setItems(observaleBets);
 		service.addListener(Action.ADD_BET, this);
 		
 		amountBetColumn.setCellValueFactory(data ->
@@ -68,11 +77,7 @@ public class CarInfoView extends TitledPane implements ActionListener {
 			btnMakeBet.setDisable(!isValidValue);
 		});
 	}
-	
-	public CarInfoView() {
-		this(null);
-	}
-	
+
 	/**
 	 * Deletes all data so that this view can be reused.
 	 */
@@ -88,7 +93,7 @@ public class CarInfoView extends TitledPane implements ActionListener {
 	 * Sends a request to the server to receive all bets on this car.
 	 */
 	private void obtainBets() {
-		service.send(new Command(Action.OBTAIN_BETS, car));
+		service.send(new Command(Action.OBTAIN_BETS, car), this);
 	}
 	
 	/**
@@ -104,39 +109,21 @@ public class CarInfoView extends TitledPane implements ActionListener {
 		shapeValue.setText(car.getShape().toString());
 		sizeValue.setText(car.getSize().toString());
 		typeValue.setText(car.getType().toString());
-		SubScene carPreviewSubScene = CarView.asSubScene(car);
-		carPreview.getChildren().add(carPreviewSubScene);
-	}
-	
-	/**
-	 * Creates a view based on the fxml file.
-	 */
-	private void inflateLayout() {
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("car_info.fxml"));
-		loader.setRoot(this);
-		loader.setController(this); 
-
-		try {
-			loader.load();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+		SubScene carView = CarView.asSubScene(car);
+		carPreview.getChildren().add(carView);
 	}
 	
 	@FXML public void handleMakeBetAction(ActionEvent event) {
 		String value = amount.getText().trim();
 		if (!value.isEmpty()) {
 			Integer amountValue = Integer.valueOf(value);
-			Bet bet = new Bet(amountValue, car, service.getUser());
+			Bet bet = new Bet(amountValue, car, authorizedUser);
 			service.send(new Command(Action.MAKE_BET, bet));
 			amount.setText("");
 		}
 	}
-	
-	public boolean isValidBet(int amount) {
-		return amount > 0;
-	}
 
+	@SuppressWarnings({ "unchecked", "incomplete-switch" })
 	@Override public void actionPerformed(Action action, Object data) {
 		switch (action) {
 			case ADD_BETS: handleAddBets((List<Bet>) data); break;
@@ -146,16 +133,15 @@ public class CarInfoView extends TitledPane implements ActionListener {
 
 	private void handleAddBets(List<Bet> bets) {
 		Platform.runLater(() -> {
-			if (!bets.isEmpty() && bets.get(0).getCar().equals(car)) {
-				observaleBets.addAll((List<Bet>) bets);
-				betsTable.setItems(observaleBets);
+			if (!bets.isEmpty()) {
+				observaleBets.addAll(bets);
 				totalBetsValue.setText(bets.size() + "");
 				
 				int amountBets = bets.stream()
 					.map(bet -> bet.getAmount())
 					.reduce(0, Integer::sum);
 				
-				amountBetsValue.setText(String.valueOf(amountBets));
+				amountBetsValue.setText(amountBets + "");
 			}
 		});
 	}
@@ -171,5 +157,20 @@ public class CarInfoView extends TitledPane implements ActionListener {
 				totalBetsValue.setText((oldVal + 1) + "");
 			}
 		});
+	}
+
+	/**
+	 * Creates a view based on the fxml file.
+	 */
+	private void inflateLayout() {
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("car_info.fxml"));
+		loader.setRoot(this);
+		loader.setController(this); 
+
+		try {
+			loader.load();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

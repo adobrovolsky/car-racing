@@ -1,18 +1,25 @@
 package com.carracing.client.view;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import com.carracing.client.RaceService;
+import com.carracing.client.util.ColumnFormatter;
+import com.carracing.client.util.Util;
 import com.carracing.shared.Command;
 import com.carracing.shared.Command.Action;
 import com.carracing.shared.model.Race;
 import com.carracing.shared.model.reports.RaceReport;
 
+import javafx.application.Platform;
 import javafx.beans.Observable;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -101,9 +108,13 @@ public class RaceReportView extends AnchorPane {
 
 		profitColumn.setCellValueFactory(d -> 
 			new ReadOnlyObjectWrapper<Double>(d.getValue().getSystemProfit()));
+		profitColumn.setCellFactory(new ColumnFormatter<>(new DecimalFormat("0.00")));
 		
-		dateColumn.setCellValueFactory(d -> 
-			new ReadOnlyStringWrapper(d.getValue().getDate()));
+		dateColumn.setCellValueFactory(d ->  {
+			LocalDateTime time = d.getValue().getDate();
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/uu HH:mm");
+			return new ReadOnlyStringWrapper(time.format(formatter));
+		});
 		
 		Callback<RaceReport, Observable[]> cb = report -> new Observable[] {
 				new SimpleDoubleProperty(report.getSystemProfit())
@@ -134,32 +145,40 @@ public class RaceReportView extends AnchorPane {
 	}
 	
 	/**
-	 * This class allows to highlight the last race. Within 10 seconds 
+	 * This class allows to highlight the last race. Within 15 seconds 
 	 * the last race will be highlighted in yellow.
 	 */
 	private class LightingCallback implements Callback<TableView<RaceReport>, TableRow<RaceReport>> {
-		@Override
-		public TableRow<RaceReport> call(TableView<RaceReport> param) {
+		private static final int LIGHTING_TIME = 15_000;
+		private static final int RACE_DURATION = Race.DURATION * 1_000;
+		
+		@Override public TableRow<RaceReport> call(TableView<RaceReport> param) {
 			return new TableRow<RaceReport>() {
-				@Override
-				public void updateItem(RaceReport report, boolean empty) {
+				@Override public void updateItem(RaceReport report, boolean empty) {
 					super.updateItem(report, empty);
 					if (report == null || empty) {
+						setStyle(null);
 						return;
 					}
 					
-					String raceDateTime = report.getDate();
-					if (raceDateTime != null) {
-						long raceTime = LocalDateTime.parse(raceDateTime)
+					LocalDateTime raceStartDate = report.getDate();
+					if (raceStartDate != null) {
+						long raceTime = raceStartDate
 								.atZone(ZoneId.systemDefault())
 								.toInstant()
 								.toEpochMilli();
 						
-						raceTime += Race.DURATION * 1_000;
+						raceTime += RACE_DURATION;
 						long currentTime = System.currentTimeMillis();
 						long delta = currentTime - raceTime;
-						if (delta < 10_000) {
+						
+						if (delta < LIGHTING_TIME) {
 							setStyle("-fx-control-inner-background: yellow");
+							new Timer().schedule(new TimerTask() {
+								@Override public void run() {
+									Platform.runLater(() -> Util.refreshTable(getTableView()));
+								}
+							}, LIGHTING_TIME + 100);
 						} else {
 							setStyle(null);
 						}

@@ -1,7 +1,6 @@
 package com.carracing.shared.model.reports;
 
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +27,7 @@ public class GamblerReport implements Serializable {
 		private double profit;
 		private List<Car> cars = new ArrayList<>();
 		private long id;
-		private String date;
+		private LocalDateTime date;
 		
 		public Race(String name, double profit, List<Car> cars) {
 			this.name = name;
@@ -74,11 +73,11 @@ public class GamblerReport implements Serializable {
 			cars.add(car);
 		}
 
-		public String getDate() {
+		public LocalDateTime getDate() {
 			return date;
 		}
 
-		public void setDate(String date) {
+		public void setDate(LocalDateTime date) {
 			this.date = date;
 		}
 	}

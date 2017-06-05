@@ -104,7 +104,6 @@ public class UserJdbcRepository implements Repository<User> {
 	}
 	
 	public static class SelectUserByLoginAndPasswordQuery implements SqlSpecification {
-		
 		private final String login;
 		private final String password;
 
@@ -119,4 +118,17 @@ public class UserJdbcRepository implements Repository<User> {
 					login, password);
 		}
 	}
+	
+	public static class SelectUserByLoginQuery implements SqlSpecification {
+		private final String login;
+		
+		public SelectUserByLoginQuery(String login) {
+			this.login = login;
+		}
+
+		@Override public String toSqlQuery() {
+			return String.format("Select * FROM user WHERE login LIKE '%s'", login);
+		}
+	}
+
 }

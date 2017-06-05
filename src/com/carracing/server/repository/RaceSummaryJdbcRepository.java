@@ -118,7 +118,6 @@ public class RaceSummaryJdbcRepository implements Repository<RaceSummary>{
 			}
 			return list;
 		}
-		
 	}
 
 }

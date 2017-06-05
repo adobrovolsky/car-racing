@@ -1,10 +1,12 @@
 package com.carracing.client.view;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.carracing.client.RaceService;
+import com.carracing.client.util.ColumnFormatter;
 import com.carracing.shared.model.RaceSummary;
 
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -36,16 +38,7 @@ public class RaceSummaryView extends VBox {
 		inflateLayout();
 		configureTableColumns();
 
-		if (service.isLogin()) {
-			com.carracing.shared.model.User currUser = service.getUser();
-			Double profit = summary.getUserProfits().get(currUser);
-			if (profit != null && profit > 0) {
-				message.setText("You Win!");
-			} else {
-				message.setText("You Lose!");
-			}
-		}
-		
+		message.setText("The End!");
 		List<User> users = convertRaceSummaryToUser(summary);
 		usersTable.setItems(FXCollections.observableArrayList(users));
 		carPreview.getChildren().add(CarView.asSubScene(summary.getWinner()));
@@ -63,6 +56,7 @@ public class RaceSummaryView extends VBox {
 	
 		profitColumn.setCellValueFactory(data ->
 			new ReadOnlyObjectWrapper<Double>(data.getValue().profit));
+		profitColumn.setCellFactory(new ColumnFormatter<>(new DecimalFormat("0.00")));
 	}
 
 	/**

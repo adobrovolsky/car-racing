@@ -56,7 +56,7 @@ public class RaceOrganizer {
 	/**
 	 * Delay after the race is finished in seconds.
 	 */
-	public static final int DELAY_AFTER_RACE = 60;
+	public static final int DELAY_AFTER_RACE = 30;
 	
 	/** 
 	 * The percentage of bets which takes the organizer.
@@ -107,7 +107,6 @@ public class RaceOrganizer {
 			this.organizer = organizer;
 		}
 
-		@SuppressWarnings("unused")
 		@Override
 		public void run() {
 			LOGGER.info("Running race " + race);
@@ -126,6 +125,11 @@ public class RaceOrganizer {
 				Server.notifyClients(new Command(Action.ADD_ACTIVE_RACE, race));
 				
 				int repeat = DURATION / CHANGE_SPEED_INTERVAL;
+				
+				if (repeat < 1) {
+					TimeUnit.SECONDS.sleep(DURATION);
+				}
+				
 				for (int i = 0; i < repeat; i++) {
 					TimeUnit.SECONDS.sleep(CHANGE_SPEED_INTERVAL);
 					race.randomSpeed();
@@ -182,7 +186,7 @@ public class RaceOrganizer {
 		report.setSystemProfit(systemProfit);
 		report.setTotalBets(bets.getCountBets());
 		report.setRaceName(race.toString());
-		report.setDate(race.getStarted().toString());
+		report.setDate(race.getStarted());
 		
 		summaryRepo.add(summary);
 		
@@ -373,6 +377,8 @@ public class RaceOrganizer {
 			race.setStatus(RaceStatus.READY);
 			raceRepo.update(race);
 			bet.setRaceStateChanged(true);
+		} else {
+			bet.setRaceStateChanged(false);
 		}
 
 		nextRace();

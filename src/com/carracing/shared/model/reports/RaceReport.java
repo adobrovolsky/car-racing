@@ -1,6 +1,7 @@
 package com.carracing.shared.model.reports;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 public class RaceReport implements Serializable {
 
@@ -11,15 +12,15 @@ public class RaceReport implements Serializable {
 	private String carName;
 	private double systemProfit;
 	private String raceName;
-	private String date;
+	private LocalDateTime date;
 
 	public RaceReport() {}
 	
-	public String getDate() {
+	public LocalDateTime getDate() {
 		return date;
 	}
 
-	public void setDate(String date) {
+	public void setDate(LocalDateTime date) {
 		this.date = date;
 	}
 

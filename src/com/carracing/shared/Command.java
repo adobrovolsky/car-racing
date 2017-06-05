@@ -2,6 +2,9 @@ package com.carracing.shared;
 
 import java.io.Serializable;
 
+import com.carracing.shared.Command.Action;
+import com.carracing.shared.model.User;
+
 /**
  * This is a command that the server and the client use 
  * to communicate with each other. For example, when a 
@@ -26,6 +29,8 @@ public class Command implements Serializable {
 	 */
 	private Object data;
 	
+	private Object metadata;
+	
 	public Command(Action action, Object data) {
 		this.action = action;
 		this.data = data;
@@ -33,6 +38,12 @@ public class Command implements Serializable {
 	
 	public Command(Action action) {
 		this.action = action;
+	}
+
+	public Command(Action action, Object data, Object metadata) {
+		this.action = action;
+		this.data = data;
+		this.metadata = metadata;
 	}
 
 	public Action getAction() {
@@ -44,9 +55,17 @@ public class Command implements Serializable {
 		return (T) data;
 	}
 	
-	@Override
-	public String toString() {
+	@Override public String toString() {
 		return "action: " + action.toString() + " data: " + data;
+	}
+	
+	public void setMeta(Object metadata) {
+		this.metadata = metadata;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <T> T getMetadata() {
+		return (T) metadata;
 	}
 	
 	/**

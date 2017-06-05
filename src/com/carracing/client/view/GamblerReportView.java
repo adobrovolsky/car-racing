@@ -1,15 +1,20 @@
 package com.carracing.client.view;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.stream.Collectors;
 
 import com.carracing.client.RaceService;
+import com.carracing.client.util.ColumnFormatter;
+import com.carracing.client.util.Util;
 import com.carracing.shared.Command;
 import com.carracing.shared.Command.Action;
 import com.carracing.shared.model.Bet;
@@ -18,6 +23,7 @@ import com.carracing.shared.model.Race;
 import com.carracing.shared.model.RaceSummary;
 import com.carracing.shared.model.reports.GamblerReport;
 
+import javafx.application.Platform;
 import javafx.beans.Observable;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -133,7 +139,7 @@ public class GamblerReportView extends AnchorPane {
 			GamblerReport.Race race = new GamblerReport.Race();
 			race.setName(summary.getRace().toString());
 			race.setProfit(profit);
-			race.setDate(summary.getRace().getStarted().toString());
+			race.setDate(summary.getRace().getStarted());
 
 			List<Bet> bets = summary.getUserBets().get(report.getUser());
 
@@ -157,11 +163,15 @@ public class GamblerReportView extends AnchorPane {
 	
 	private void configureTableColumns() {
 		nameColumn.setCellValueFactory(d -> new ReadOnlyStringWrapper(d.getValue().getUser().getFullname()));
+		
 		totalProfitColumn.setCellValueFactory(d -> d.getValue().profitProperty());
+		totalProfitColumn.setCellFactory(new ColumnFormatter<>(new DecimalFormat("0.00")));
+		
 		numberRacesColumn.setCellValueFactory(d -> d.getValue().numberRacesProperty());
 		
 		raceNameColumn.setCellValueFactory(d -> new ReadOnlyStringWrapper(d.getValue().getName()));
 		profitColumn.setCellValueFactory(d -> new ReadOnlyObjectWrapper<Double>(d.getValue().getProfit()));
+		profitColumn.setCellFactory(new ColumnFormatter<>(new DecimalFormat("0.00")));
 		
 		carNameColumn.setCellValueFactory(d -> new ReadOnlyStringWrapper(d.getValue().getName()));
 		amountBetColumn.setCellValueFactory(d -> new ReadOnlyObjectWrapper<Integer>(d.getValue().getAmountBet()));
@@ -197,28 +207,33 @@ public class GamblerReportView extends AnchorPane {
 	 * the last race will be highlighted in yellow.
 	 */
 	private class LightingCallback implements Callback<TableView<GamblerReport.Race>, TableRow<GamblerReport.Race>> {
-		@Override
-		public TableRow<GamblerReport.Race> call(TableView<GamblerReport.Race> param) {
+		private static final int LIGHTING_TIME = 15_000;
+		private static final int RACE_DURATION = Race.DURATION * 1_000;
+
+		@Override public TableRow<GamblerReport.Race> call(TableView<GamblerReport.Race> param) {
 			return new TableRow<GamblerReport.Race>() {
-				@Override
-				public void updateItem(GamblerReport.Race report, boolean empty) {
+				@Override public void updateItem(GamblerReport.Race report, boolean empty) {
 					super.updateItem(report, empty);
 					if (report == null || empty) {
+						setStyle(null);
 						return;
 					}
-					
-					String raceDateTime = report.getDate();
-					if (raceDateTime != null) {
-						long raceTime = LocalDateTime.parse(raceDateTime)
-								.atZone(ZoneId.systemDefault())
-								.toInstant()
-								.toEpochMilli();
-						
-						raceTime += Race.DURATION * 1_000;
+
+					LocalDateTime raceStartDate = report.getDate();
+					if (raceStartDate != null) {
+						long raceTime = raceStartDate.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+
+						raceTime += RACE_DURATION;
 						long currentTime = System.currentTimeMillis();
 						long delta = currentTime - raceTime;
-						if (delta < 15_000) {
+
+						if (delta < LIGHTING_TIME) {
 							setStyle("-fx-control-inner-background: yellow");
+							new Timer().schedule(new TimerTask() {
+								@Override public void run() {
+									Platform.runLater(() -> Util.refreshTable(getTableView()));
+								}
+							}, LIGHTING_TIME + 100);
 						} else {
 							setStyle(null);
 						}

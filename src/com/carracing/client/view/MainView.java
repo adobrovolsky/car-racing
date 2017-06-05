@@ -2,22 +2,18 @@ package com.carracing.client.view;
 
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.carracing.client.Client;
-import com.carracing.client.FileLocker;
 import com.carracing.client.RaceService;
-import com.carracing.client.RaceService.ActionListener;
 import com.carracing.client.WindowCounter;
 import com.carracing.shared.Command;
 import com.carracing.shared.Command.Action;
 import com.carracing.shared.model.Car;
 import com.carracing.shared.model.Race;
 import com.carracing.shared.model.RaceSummary;
-import com.carracing.shared.model.User;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -35,13 +31,13 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 
-public class MainView extends StackPane implements ActionListener {
+public class MainView extends StackPane {
+	
+	public static final String TITLE = "Car racing"; 
 
 	private final RaceService service = RaceService.getInstance();
-	private final Queue<Stage> windowQueue = new ConcurrentLinkedQueue<>();
-	private final FileLocker fileLocker = new FileLocker("reports.lock");
+	private static Queue<Stage> windowQueue = new ConcurrentLinkedQueue<>();
 
 	@FXML private ListView<Race> racesListView;
 	@FXML private VBox carsContainer;
@@ -51,29 +47,36 @@ public class MainView extends StackPane implements ActionListener {
 	@FXML private AnchorPane contentPane;
 	
 	private LoginView loginView;
-	private boolean initialized;
+	private boolean initialized = false;
+	private static boolean firstStart = true;
+	private static boolean raceStarted = false;
 	
 	public MainView() {
 		infliteLayout();
-		
-		loginView = new LoginView();
+
+		loginView = new LoginView((user) -> {
+			greeting.setText("Hello " + user.getFullname() + "!");
+			showContent();
+			initialize();
+		});
 		mainPane.getChildren().add(loginView);
 		showLoginPane();
-		
-		service.addListener(Action.ADD_USER, (a, d) -> {
-			Platform.runLater(() -> {
-				if(d != null) {
-					User user = (User) d;
-					greeting.setText("Hello " + user.getFullname() + "!");
-					showContent();
-					init();
-				}
-			});
-		});
 	}
 	
 	@FXML private void handleAddRace(ActionEvent event) {
 		showRaceWindow(new CarRacingView(), true);
+	}
+	
+	@FXML private void handleAddUser(ActionEvent event) {
+		MainView root = new MainView();
+		Stage stage = createStage(root, TITLE);
+		stage.setOnCloseRequest(e -> {
+			WindowCounter.decrement();
+			WindowCounter.executeIfZero(() -> Client.finaly());
+			root.close();
+		});
+		stage.show();
+		WindowCounter.incement();
 	}
 	
 	private void showLoginPane() {
@@ -86,17 +89,17 @@ public class MainView extends StackPane implements ActionListener {
 		contentPane.setVisible(true);
 	}
 
-	public void init() {
+	private void initialize() {
 		splitPane.setDividerPosition(0, 0.2);
 		for (int i = 0; i < Race.NUMBER_CARS; i++) {
-			carsContainer.getChildren().add(new CarInfoView());
+			carsContainer.getChildren().add(new CarInfoView(loginView.getUser()));
 		}
-		
-		service.addListener(Action.ADD_RACES, this);
-		service.addListener(Action.FINISH_GAME, this);
-		service.addListener(Action.ADD_ACTIVE_RACE, this);
 
 		racesListView.getSelectionModel().selectedItemProperty().addListener((o, oldVal, newVal) -> {
+			if (newVal == null) {
+				carsContainer.getChildren().clear();
+				return;
+			}
 			ObservableList<Node> children = carsContainer.getChildren();
 			Iterator<Car> cars = newVal.getCars().iterator();
 
@@ -105,28 +108,28 @@ public class MainView extends StackPane implements ActionListener {
 			}
 		});
 		
-		showRaceWindow(new CarRacingView(), true);
-		showRaceWindow(new CarRacingView(), true);
-		showRaceWindow(new CarRacingView(), true);
-		
-		if (fileLocker.lock()) {
+		if (firstStart) {
+			showRaceWindow(new CarRacingView(), true);
+			showRaceWindow(new CarRacingView(), true);
+			showRaceWindow(new CarRacingView(), true);
 			showReportsWindow();
+			firstStart = false;
 		}
 		
-		service.send(new Command(Action.OBTAIN_RASES));
+		service.addListener(Action.ADD_ACTIVE_RACE, this::handleAddActiveRace);
+		service.addListener(Action.FINISH_GAME, this::handleFinishGame);
+		service.send(new Command(Action.OBTAIN_RASES), this::handleAddRaces);
 		initialized = true;
 	}
 	
 	private void showReportsWindow() {
 		Stage stage = createStage(new ReportsView(), ReportsView.TITLE);
 		stage.setOnCloseRequest(e -> {
-			fileLocker.unlock();
 			stage.close();
 			WindowCounter.decrement();
 			WindowCounter.executeIfZero(() -> Client.finaly());
 		});
 		stage.show();
-		
 		WindowCounter.incement();
 	}
 	
@@ -153,39 +156,42 @@ public class MainView extends StackPane implements ActionListener {
 		stage.setTitle(title);
 		return stage;
 	}
-
-	@Override
-	public void actionPerformed(Action action, Object data) {
+	
+	public void handleAddActiveRace(Action a, Object d) {
 		Platform.runLater(() -> {
-			switch (action) {
-			case ADD_RACES: handleAddRaces((List<Race>) data); break;
-			case FINISH_GAME: handleFinishGame((RaceSummary) data); break;
-			case ADD_ACTIVE_RACE: handleAddActiveRace((Race) data); break;
+			if (raceStarted) {
+				return;
 			}
+			Race race = (Race) d;
+			Stage stage = windowQueue.poll();
+			CarRacingView carRacingView;
+			
+			if (stage != null) {
+				stage.setTitle(race.toString());
+				carRacingView = (CarRacingView) stage.getScene().getRoot();
+			} else {
+				carRacingView = new CarRacingView();
+				showRaceWindow(carRacingView, false);
+			}
+			carRacingView.startRace(race);
+			raceStarted = true;
 		});
 	}
-	
-	private void handleAddActiveRace(Race race) {
-		Stage stage = windowQueue.poll();
-		if (stage != null) {
-			stage.setTitle(race.toString());
-			CarRacingView carRacingView = (CarRacingView) stage.getScene().getRoot();
-			carRacingView.startRace(race);
-		} else {
-			CarRacingView carRacingView = new CarRacingView();
-			showRaceWindow(carRacingView, false);
-			carRacingView.startRace(race);
-		}
+
+	public void handleFinishGame(Action a, Object d) {
+		Platform.runLater(() -> {
+			racesListView.getItems().remove(((RaceSummary) d).getRace());
+			raceStarted = false;
+		});
 	}
 
-	private void handleFinishGame(RaceSummary summary) {
-		racesListView.getItems().remove(summary.getRace());
-	}
-
-	public void handleAddRaces(List<Race> races) {
-		ObservableList<Race> items = FXCollections.observableArrayList(races);
-		racesListView.setItems(items);
-		racesListView.getSelectionModel().selectFirst();
+	@SuppressWarnings("unchecked")
+	public void handleAddRaces(Action a, Object d) {
+		Platform.runLater(() -> {
+			ObservableList<Race> items = FXCollections.observableArrayList((List<Race>) d);
+			racesListView.setItems(items);
+			racesListView.getSelectionModel().selectFirst();
+		});
 	}
 	
 	/**
@@ -205,12 +211,9 @@ public class MainView extends StackPane implements ActionListener {
 
 	public void close() {
 		if (initialized) {
-			service.removeListener(Action.ADD_RACES, this);
-			service.removeListener(Action.FINISH_GAME, this);
-			service.removeListener(Action.ADD_ACTIVE_RACE, this);
-			
-			windowQueue.stream().forEach(stage -> 
-				stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST)));
+			service.removeListener(Action.FINISH_GAME, this::handleFinishGame);
+			service.removeListener(Action.ADD_ACTIVE_RACE, this::handleAddActiveRace);
+			loginView.logout();
 		}
 		
 		Stage stage = (Stage) getScene().getWindow();

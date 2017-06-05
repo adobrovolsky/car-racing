@@ -93,6 +93,7 @@ public class ClientHandler implements AutoCloseable {
 			super(is, listener);
 		}
 
+		@SuppressWarnings("incomplete-switch")
 		@Override protected void processCommand(Command command) {
 			Action action = command.getAction();
 			
@@ -100,12 +101,12 @@ public class ClientHandler implements AutoCloseable {
 			
 			switch (action) {
 			case OBTAIN_ACTIVE_RACE: obtainActiveRace(); break;
-			case OBTAIN_RASES: obtainRaces(); break;
-			case OBTAIN_BETS: obtainBets(command.getData()); break;
+			case OBTAIN_RASES: obtainRaces(command.getMetadata()); break;
+			case OBTAIN_BETS: obtainBets(command.getData(), command.getMetadata()); break;
 			case OBTAIN_RACE_REPORTS: obtainRaceReports(); break;
 			case MAKE_BET: makeBet(command.getData()); break;
-			case LOGIN: login(command.getData()); break;
-			case SIGNUP: signup(command.getData()); break;
+			case LOGIN: login(command.getData(), command.getMetadata()); break;
+			case SIGNUP: signup(command.getData(), command.getMetadata()); break;
 			case OBTAIN_CAR_REPORTS: obtainCarReports(command.getData()); break;
 			case OBTAIN_GAMBLER_REPORTS: obtainGamblerReports(); break;
 			}
@@ -123,9 +124,9 @@ public class ClientHandler implements AutoCloseable {
 			writeHandler.send(command);
 		}
 
-		private void obtainRaces() {
+		private void obtainRaces(final Integer requestID) {
 			List<Race> races = raceService.obtainRaces();
-			Command command = new Command(Action.ADD_RACES, races);
+			Command command = new Command(Action.ADD_RACES, races, requestID);
 			writeHandler.send(command);
 		}
 
@@ -135,9 +136,9 @@ public class ClientHandler implements AutoCloseable {
 			writeHandler.send(command);
 		}
 
-		private void obtainBets(final Car car) {
+		private void obtainBets(final Car car, final Integer requestID) {
 			List<Bet> bets = raceService.obtainBets(car);
-			Command command = new Command(Action.ADD_BETS, bets);
+			Command command = new Command(Action.ADD_BETS, bets, requestID);
 			writeHandler.send(command);
 		}
 
@@ -147,15 +148,15 @@ public class ClientHandler implements AutoCloseable {
 			writeHandler.send(command);
 		}
 
-		private void signup(final User user) {
+		private void signup(final User user, final Integer requestID) {
 			boolean succeful = raceService.signup(user);
-			Command command = new Command(Action.CHECK_SIGNUP_RESULT, succeful);
+			Command command = new Command(Action.CHECK_SIGNUP_RESULT, succeful, requestID);
 			writeHandler.send(command);
 		}
 
-		private void login(final User credentials) {
+		private void login(final User credentials, final Integer requestID) {
 			User user = raceService.login(credentials);
-			Command command = new Command(Action.ADD_USER, user);
+			Command command = new Command(Action.ADD_USER, user, requestID);
 			writeHandler.send(command);
 		}
 

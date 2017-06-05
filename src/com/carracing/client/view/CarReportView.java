@@ -1,10 +1,12 @@
 package com.carracing.client.view;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.List;
 
 import com.carracing.client.RaceService;
+import com.carracing.client.util.ColumnFormatter;
 import com.carracing.shared.Command;
 import com.carracing.shared.Command.Action;
 import com.carracing.shared.model.reports.CarReport;
@@ -98,6 +100,7 @@ public class CarReportView extends AnchorPane {
 		
 		distanceColumn.setCellValueFactory(d ->
 			new ReadOnlyObjectWrapper<Double>(d.getValue().getDistance()));
+		distanceColumn.setCellFactory(new ColumnFormatter<>(new DecimalFormat("0.##")));
 		
 		raceColumn.setCellValueFactory(d -> 
 			new ReadOnlyStringWrapper(d.getValue().getRaceName()));

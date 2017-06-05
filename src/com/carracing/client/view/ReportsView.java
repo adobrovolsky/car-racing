@@ -1,6 +1,7 @@
 package com.carracing.client.view;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.List;
 
 import com.carracing.client.RaceService;
@@ -36,6 +37,7 @@ public class ReportsView extends VBox {
 	private int completedRaces;
 	private long racesReadyToStart;
 	
+	@SuppressWarnings("unchecked")
 	public ReportsView() {
 		infliteLayout();
 		gamblersTab.setContent(new GamblerReportView());
@@ -61,7 +63,7 @@ public class ReportsView extends VBox {
 		
 		service.addListener(Action.ADD_RACES, (a, d) -> {
 			Platform.runLater( () -> {
-				racesReadyToStart = ((List<Race>)d).stream().filter(race -> race.isReady()).count();
+				racesReadyToStart = ((List<Race>) d).stream().filter(race -> race.isReady()).count();
 				racesReadyToStartView.setText(racesReadyToStart + "");
 			});
 		});
@@ -76,7 +78,8 @@ public class ReportsView extends VBox {
 				
 				completedRaces = reports.size();
 				
-				totalSystemProfitView.setText(totalSystemProfit + "");
+				String formatedProfit = new DecimalFormat("0.00").format(totalSystemProfit);
+				totalSystemProfitView.setText(formatedProfit);
 				completedRacesView.setText(completedRaces + "");
 			});
 		});
@@ -87,7 +90,8 @@ public class ReportsView extends VBox {
 				totalSystemProfit += report.getSystemProfit();
 				completedRaces++;
 				
-				totalSystemProfitView.setText(totalSystemProfit + "");
+				String formatedProfit = new DecimalFormat("0.00").format(totalSystemProfit);
+				totalSystemProfitView.setText(formatedProfit);
 				completedRacesView.setText(completedRaces + "");
 			});
 		});

@@ -7,6 +7,7 @@ import com.carracing.server.repository.ReportsJdbcRepository;
 import com.carracing.server.repository.Repository;
 import com.carracing.server.repository.Specification;
 import com.carracing.server.repository.UserJdbcRepository;
+import com.carracing.server.repository.UserJdbcRepository.SelectUserByLoginQuery;
 import com.carracing.server.repository.UserJdbcRepository.SelectUserByLoginAndPasswordQuery;
 import com.carracing.shared.model.Bet;
 import com.carracing.shared.model.Car;
@@ -66,7 +67,15 @@ public class RaceService {
 	}
 	
 	public boolean signup(User user) {
-		return userRepository.add(user);
+		if (user.getLogin() == null) {
+			return false;
+		}
+		Specification spec = new SelectUserByLoginQuery(user.getLogin());
+		List<User> users = userRepository.query(spec);
+		if (users.isEmpty()) {
+			return userRepository.add(user);
+		}
+		return false;
 	}
 	
 	public RaceOrganizer getRaceOrganizer() {
